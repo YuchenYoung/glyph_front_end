@@ -12,10 +12,10 @@
       v-show="upload_display"
     >
       <i class="el-icon-upload"></i>
-      <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+      <div class="el-upload__text">Click or drag the file here to upload</div>
     </el-upload>
     <ul v-show="svg_display">
-      <li v-for="item in svg_list" :key="item" v-html="item" :style="svg_style"></li>
+      <li v-for="it in dis.coms" :key="it" v-html="it" :style="dis.style"></li>
     </ul>
   </div>
 </template>
@@ -33,6 +33,7 @@ export default {
         width: "0",
         height: "0",
       },
+      dis: {}
     };
   },
   methods: {
@@ -51,25 +52,46 @@ export default {
         _this.upload_display = false;
         _this.svg_display = true;
       });
+      this.$store.state.img_content = file.name.split('.')[0]
       return false;
     },
     separateSvgComponents(src) {
       const _this = this;
+      // this.$store.state.ori_svg = src;
+      _this.svg_list.push(src);
+      _this.$store.state.svg_list.push(src);
       let mid_st_str = `<path d="`;
       let mid_start = src.indexOf(mid_st_str) + mid_st_str.length;
       let head = src.substring(0, mid_start);
-      _this.svg_style.width = head.split(`width="`)[1].split(`"`)[0] + "px";
-      _this.svg_style.height = head.split(`height="`)[1].split(`"`)[0] + "px";
-      _this.$store.state.svg_width = +head.split(`width="`)[1].split(`"`)[0];
-      _this.$store.state.svg_height = +head.split(`height="`)[1].split(`"`)[0];
+      let width = +head.split(`width="`)[1].split(`"`)[0];
+      let height = +head.split(`height="`)[1].split(`"`)[0];
+      _this.svg_style.width = width + "px";
+      _this.svg_style.height = height + "px";
+      _this.$store.state.svg_width = width;
+      _this.$store.state.svg_height = height;
       src = src.substr(mid_start + 1);
       let mid_end = src.indexOf(`"`);
       let mid = src.substr(0, mid_end);
       let tail = src.substr(mid_end);
+      let dis = {coms: []};
+      dis.width = 100;
+      const scale = dis.width / width;
+      dis.height = scale * height;
+      dis.style = {
+        width: dis.width + "px",
+        height: dis.height + "px"
+      };
+      const tranx = width * 0.5 * (scale - 1);
+      const trany = height * 0.5 * (scale - 1);
+      dis.coms.push(`<svg width="${width}" height="${height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="M${mid}"></path></svg>`)
       mid.split("M").forEach((it) => {
-        _this.svg_list.push(head + "M" + it + tail);
+        const cur_svg = head + "M" + it + tail;
+        _this.svg_list.push(cur_svg);
+        _this.$store.state.svg_list.push(cur_svg);
         _this.$store.state.d_list.push("M" + it);
+        dis.coms.push(`<svg width="${width}" height="${height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="M${it}"></path></svg>`)
       });
+      _this.dis = dis;
     },
   },
 };

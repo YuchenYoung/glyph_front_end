@@ -11,7 +11,7 @@ const routes = [
   {
     path: '/svg',
     name: 'svg',
-    component: () => import('../components/Svg.vue')
+    component: () => import('../views/Svg.vue')
   },
   {
     path: '/index',

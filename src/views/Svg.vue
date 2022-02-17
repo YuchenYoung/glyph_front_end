@@ -36,7 +36,7 @@
         </ul>
       </div>
     </div>
-    <div v-if="false">
+    <div>
       <el-divider></el-divider>
       <h2>Test Server</h2>
       <el-button @click="testServer">Test Server</el-button>
@@ -62,8 +62,8 @@ export default {
   methods: {
     testServer() {
       this.$axios({
-        method: "post",
-        url: "/testServer",
+        method: "get",
+        url: "/testServer/",
       }).then((res) => {
         console.log(res.data);
         this.server_response = res.data;
@@ -72,8 +72,8 @@ export default {
     searchImg() {
       console.log(this.search_keys);
       this.$axios({
-        method: "post",
-        url: "/search",
+        method: "get",
+        url: "/search/",
         params: {
           keyWords: this.search_keys,
           imgNum: this.search_num * 3,

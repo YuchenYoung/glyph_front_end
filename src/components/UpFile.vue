@@ -12,21 +12,11 @@
       v-show="upload_display"
     >
       <i class="el-icon-upload"></i>
-      <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+      <div class="el-upload__text">Click or drag the file here to upload</div>
     </el-upload>
     <div v-show="table_display" style="margin-top: 20px">
       <el-table :data="table_data" border height="300px" style="width: 100%">
-        <el-table-column prop="model" label="model"> </el-table-column>
-        <el-table-column prop="year" label="year"> </el-table-column>
-        <el-table-column prop="price" label="price"> </el-table-column>
-        <el-table-column prop="transmission" label="transmission">
-        </el-table-column>
-        <el-table-column prop="mileage" label="mileage"> </el-table-column>
-        <el-table-column prop="fuelType" label="fuelType"> </el-table-column>
-        <el-table-column prop="tax" label="tax"> </el-table-column>
-        <el-table-column prop="mpg" label="mpg"> </el-table-column>
-        <el-table-column prop="engineSize" label="engineSize">
-        </el-table-column>
+        <el-table-column v-for="it in props" :key="it" :prop="it" :label="it"></el-table-column>
       </el-table>
     </div>
   </div>
@@ -42,6 +32,7 @@ export default {
       table_display: false,
       upload_display: true,
       table_data: [],
+      props: [],
       data_type: {}
     };
   },
@@ -76,6 +67,8 @@ export default {
           return;
         }
         const props = Object.keys(tmp_data[0]);
+        this.props = props;
+        this.$store.state.props = props;
         console.log(props);
         props.forEach(it => {
           this.judgeDataType(it, tmp_data.map(d => d[it]));

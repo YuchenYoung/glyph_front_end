@@ -1,16 +1,14 @@
 <template>
   <div id="visD3" style="text-align: center">
     <h2>Visualization</h2>
-    <el-button v-show="!vis_display" @click="generateVis"
-      >Generate Visualization</el-button
-    >
-    <svg
-      v-show="vis_display"
-      width="1500"
-      height="700"
-      id="mainsvg"
-      class="svgs"
-    ></svg>
+    <el-button v-show="!vis_display && !glyph_display" @click="generateVis">Car Data</el-button>
+    <el-button type="primary" v-show="!vis_displayy && !glyph_display" @click="visPrepare">Burger Data</el-button>
+    <ul v-show="glyph_display">
+      <li v-for="(i, index) in dataSize" :key="i" style="width: 120px; height:120px">
+        <svg :id="'glyph' + index"></svg>
+      </li>
+    </ul>
+    <svg v-show="vis_display" width="1500" height="700" id="mainsvg" class="svgs"></svg>
   </div>
 </template>
 
@@ -21,15 +19,45 @@ export default {
   data() {
     return {
       vis_display: false,
-			path_size: [],
+      glyph_display: false,
+      path_size: [],
+      mapper: {},
+      // data_size: 0,
     };
   },
+  computed: {
+    dataSize() {
+      return this.$store.state.data.length;
+    }
+  },
   methods: {
+    visPrepare() {
+      const up_data = {
+        content: this.$store.state.img_content,
+        dataProps: this.$store.state.props,
+        svgList: this.$store.state.svg_list,
+      };
+      console.log(up_data);
+      this.$axios({
+        method: "post",
+        url: "/mapping/",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        data: up_data,
+      }).then((res) => {
+        const mapper = res.data;
+        console.log(mapper);
+        this.mapper = mapper;
+        this.generateGlyphs();
+      });
+    },
     getPathSize() {
       const path_list = document.getElementsByTagName("path");
-      for (let i = 0; i < path_list.length; i++) {
-        this.path_size.push(path_list[i].getBoundingClientRect())
+      for (let i = 1; i < path_list.length; i++) {
+        this.path_size.push(path_list[i].getBoundingClientRect());
       }
+      console.log(this.path_size);
     },
     generateVis() {
       this.getPathSize();
@@ -79,7 +107,7 @@ export default {
         const price_max = d3.max(data, (d) => d.price);
         const price_min = d3.min(data, (d) => d.price);
         let pie_tx, pie_ty = 0;
-				const d_list = this.$store.state.d_list;
+        const d_list = this.$store.state.d_list;
         data.forEach((it) => {
           ++render_cnt;
           const glyph = g.append("g").attr("class", "glyph");
@@ -88,8 +116,13 @@ export default {
               const part = glyph.append("path").attr("d", d_list[i]);
               if (i == 0) {
                 const part_width = _this.path_size[i].width;
-                const cur_scale = it.engineSize - 0.5
-                part.attr("transform", `translate(${part_width * (1 - cur_scale)},0),scale(${cur_scale}, 1)`);
+                const cur_scale = it.engineSize - 0.5;
+                part.attr(
+                  "transform",
+                  `translate(${
+                    part_width * (1 - cur_scale)
+                  },0),scale(${cur_scale}, 1)`
+                );
               }
             } else {
               pie_tx = _this.path_size[i].width * 0.5;
@@ -99,7 +132,7 @@ export default {
                 .attr("id", `clip-${render_cnt}`)
                 .append("path")
                 .attr("d", d_list[i])
-                .attr("transform",`translate(${-pie_tx},${-pie_ty})`);
+                .attr("transform", `translate(${-pie_tx},${-pie_ty})`);
             }
           }
           const pie = d3
@@ -117,12 +150,15 @@ export default {
             { value: it.semiAuto },
             { value: it.automatic },
           ]);
-          const arc = d3.arc().innerRadius(0).outerRadius(Math.max(pie_tx, pie_ty));
+          const arc = d3
+            .arc()
+            .innerRadius(0)
+            .outerRadius(Math.max(pie_tx, pie_ty));
           const pie_chart = glyph
             .append("g")
             .attr("class", "pie_area")
             .attr("clip-path", `url(#clip-${render_cnt})`)
-            .attr("transform",`translate(${pie_tx},${pie_ty})`);
+            .attr("transform", `translate(${pie_tx},${pie_ty})`);
           pie_chart
             .selectAll("g")
             .data(pie_data)
@@ -134,8 +170,8 @@ export default {
             .attr("d", function (d) {
               return arc(d);
             });
-					const svg_width =  this.$store.state.svg_width;
-					const svg_height = this.$store.state.svg_height;
+          const svg_width = this.$store.state.svg_width;
+          const svg_height = this.$store.state.svg_height;
           const scale = (it.price - price_min) / (price_max - price_min) + 0.5;
           const x_pos = xScale(it.year) - svg_width * 0.5 * scale;
           const y_pos = yScale(it.mileage) - svg_height * 0.5 * scale;
@@ -227,7 +263,52 @@ export default {
       render_init(glyph_data);
       render(glyph_data);
     },
-
+    generateGlyphs() {
+      this.getPathSize();
+      console.log(this.mapper);
+      console.log(this.path_size);
+      this.glyph_display = true;
+      const mapper = this.mapper;
+      const data = this.$store.state.data;
+      const props = this.$store.state.props;
+      const ds = this.$store.state.d_list;
+      let width = this.$store.state.svg_width;
+      let height = this.$store.state.svg_height;
+      let dis_width = 120;
+      let scale = dis_width / width;
+      const tranx = width * 0.5 * (scale - 1);
+      const trany = height * 0.5 * (scale - 1);
+      // this.data_size = data.length;
+      let dprop = new Array(ds.length).fill('');
+      props.forEach((it) => {
+        if (mapper[it] > 0) {
+          dprop[mapper[it] - 1] = it;
+        }
+      })
+      dprop[0] = '';
+      for (let i = 0; i < data.length; i++) {
+        console.log(`now ${i}`);
+        const g = d3.select(`#glyph${i}`);
+        const glyph = g.append('g').attr('class', 'burg')
+        let last_tran = 0;
+        for (let j = 0; j < ds.length; j++) {
+          let dn = 1;
+          if (dprop[j] != '') {
+            dn = data[i][dprop[j]];
+          }
+          const sw = this.path_size[j].width;
+          for (let k = 0; k < dn; k++) {
+            const tran = last_tran + k * sw;
+            glyph.append("path").attr("d", ds[j])
+              .attr("transform", `translate(0, ${tran})`);
+          }
+          last_tran += (dn - 1) * sw;
+        }
+        g.attr("width", width)
+          .attr("height", height)
+          .attr("transform", `translate(${tranx},${trany}),scale(${scale},${scale})`);
+      }
+    },
   },
 };
 </script>
@@ -239,4 +320,18 @@ export default {
 </style>
 
 <style lang="less" scoped>
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+ul > li {
+  overflow: hidden;
+  background-color: #fff;
+  border: 1px solid #c0ccda;
+  border-radius: 6px;
+  box-sizing: border-box;
+  margin: 0 8px 8px 0;
+  display: inline-block;
+}
 </style>

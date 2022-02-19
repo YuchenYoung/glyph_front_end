@@ -1,14 +1,28 @@
 <template>
   <div id="visD3" style="text-align: center">
     <h2>Visualization</h2>
-    <el-button v-show="!vis_display && !glyph_display" @click="generateVis">Car Data</el-button>
-    <el-button type="primary" v-show="!vis_displayy && !glyph_display" @click="visPrepare">Burger Data</el-button>
+    <div style="margin-bottom: 20px" v-show="!vis_display && !glyph_display">
+      <el-button @click="generateVis">Car Data</el-button>
+      <el-button type="primary" @click="visPrepare($event, true)">Burger Data</el-button>
+      <el-button @click="visPrepare($event, false)">Burger Map Only</el-button>
+    </div>
+    <p v-show="dis_map">{{ mapper }}</p>
     <ul v-show="glyph_display">
-      <li v-for="(i, index) in dataSize" :key="i" style="width: 120px; height:120px">
+      <li
+        v-for="(i, index) in dataSize"
+        :key="i"
+        style="width: 120px; height: 120px"
+      >
         <svg :id="'glyph' + index"></svg>
       </li>
     </ul>
-    <svg v-show="vis_display" width="1500" height="700" id="mainsvg" class="svgs"></svg>
+    <svg
+      v-show="vis_display"
+      width="1500"
+      height="700"
+      id="mainsvg"
+      class="svgs"
+    ></svg>
   </div>
 </template>
 
@@ -22,18 +36,20 @@ export default {
       glyph_display: false,
       path_size: [],
       mapper: {},
+      dis_map: false,
       // data_size: 0,
     };
   },
   computed: {
     dataSize() {
       return this.$store.state.data.length;
-    }
+    },
   },
   methods: {
-    visPrepare() {
+    visPrepare(ev, vis) {
       const up_data = {
-        content: this.$store.state.img_content,
+        // content: this.$store.state.img_content,
+        content: "burger",
         dataProps: this.$store.state.props,
         svgList: this.$store.state.svg_list,
       };
@@ -49,6 +65,8 @@ export default {
         const mapper = res.data;
         console.log(mapper);
         this.mapper = mapper;
+        this.dis_map = true;
+        if (!vis) return;
         this.generateGlyphs();
       });
     },
@@ -106,8 +124,10 @@ export default {
         console.log(data);
         const price_max = d3.max(data, (d) => d.price);
         const price_min = d3.min(data, (d) => d.price);
-        let pie_tx, pie_ty = 0;
+        let pie_tx,
+          pie_ty = 0;
         const d_list = this.$store.state.d_list;
+        const ex_scale = this.$store.state.ex_scale;
         data.forEach((it) => {
           ++render_cnt;
           const glyph = g.append("g").attr("class", "glyph");
@@ -115,7 +135,7 @@ export default {
             if (i != 1) {
               const part = glyph.append("path").attr("d", d_list[i]);
               if (i == 0) {
-                const part_width = _this.path_size[i].width;
+                const part_width = _this.path_size[i].width / ex_scale;
                 const cur_scale = it.engineSize - 0.5;
                 part.attr(
                   "transform",
@@ -125,8 +145,8 @@ export default {
                 );
               }
             } else {
-              pie_tx = _this.path_size[i].width * 0.5;
-              pie_ty = _this.path_size[i].height * 0.5;
+              pie_tx = (_this.path_size[i].width / ex_scale) * 0.5;
+              pie_ty = (_this.path_size[i].height / ex_scale) * 0.5;
               glyph
                 .append("clipPath")
                 .attr("id", `clip-${render_cnt}`)
@@ -276,37 +296,44 @@ export default {
       let height = this.$store.state.svg_height;
       let dis_width = 120;
       let scale = dis_width / width;
+      const ex_scale = this.$store.state.ex_scale;
       const tranx = width * 0.5 * (scale - 1);
       const trany = height * 0.5 * (scale - 1);
       // this.data_size = data.length;
-      let dprop = new Array(ds.length).fill('');
+      let dprop = new Array(ds.length).fill("");
       props.forEach((it) => {
         if (mapper[it] > 0) {
           dprop[mapper[it] - 1] = it;
         }
-      })
-      dprop[0] = '';
+      });
+      dprop[0] = "";
       for (let i = 0; i < data.length; i++) {
         console.log(`now ${i}`);
         const g = d3.select(`#glyph${i}`);
-        const glyph = g.append('g').attr('class', 'burg')
+        const glyph = g.append("g").attr("class", "burg");
         let last_tran = 0;
         for (let j = 0; j < ds.length; j++) {
           let dn = 1;
-          if (dprop[j] != '') {
+          if (dprop[j] != "") {
             dn = data[i][dprop[j]];
           }
-          const sw = this.path_size[j].width;
+          const sw = this.path_size[j].height / ex_scale;
+          console.log(sw);
           for (let k = 0; k < dn; k++) {
             const tran = last_tran + k * sw;
-            glyph.append("path").attr("d", ds[j])
+            glyph
+              .append("path")
+              .attr("d", ds[j])
               .attr("transform", `translate(0, ${tran})`);
           }
           last_tran += (dn - 1) * sw;
         }
         g.attr("width", width)
           .attr("height", height)
-          .attr("transform", `translate(${tranx},${trany}),scale(${scale},${scale})`);
+          .attr(
+            "transform",
+            `translate(${tranx},${trany}),scale(${scale},${scale})`
+          );
       }
     },
   },

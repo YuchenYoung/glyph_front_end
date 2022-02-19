@@ -71,12 +71,14 @@ export default {
     },
     searchImg() {
       console.log(this.search_keys);
+      this.img_urls = [];
+      this.svg_list = [];
       this.$axios({
         method: "get",
         url: "/search/",
         params: {
           keyWords: this.search_keys,
-          imgNum: this.search_num * 3,
+          imgNum: this.search_num,
         },
       }).then((res) => {
         console.log(res.data);
@@ -140,7 +142,7 @@ export default {
         svg_obj.path_list.push("M" + it);
       });
       if (
-        svg_obj.path_list.length < 10 &&
+        // svg_obj.path_list.length < 10 &&
         this.svg_list.length < this.search_num
       ) {
         this.svg_list.push(svg_obj);

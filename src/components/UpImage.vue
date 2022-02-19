@@ -2,18 +2,30 @@
   <div style="text-align: center">
     <h2>Image Upload</h2>
     <el-button v-if="false" @click="testData">Test Data</el-button>
-    <el-upload
-      class="upload-demo"
-      drag
-      :limit="1"
-      action=""
-      accept=".jpg, .png"
-      :before-upload="readImgFile"
-      v-show="upload_display"
-    >
-      <i class="el-icon-upload"></i>
-      <div class="el-upload__text">Click or drag the file here to upload</div>
-    </el-upload>
+    <div v-show="upload_display">
+      <el-input
+        style="width: auto"
+        placeholder="Search content"
+        v-model="img_content"
+        clearable
+      >
+      </el-input>
+      <el-button @click="searchImg" style="margin-left: 20px"
+        >Search</el-button
+      >
+      <el-upload
+        class="upload-demo"
+        drag
+        :limit="1"
+        action=""
+        accept=".jpg, .png"
+        :before-upload="readImgFile"
+        style="margin-top: 20px"
+      >
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">Click or drag the file here to upload</div>
+      </el-upload>
+    </div>
     <ul v-show="svg_display">
       <li v-for="it in dis.coms" :key="it" v-html="it" :style="dis.style"></li>
     </ul>
@@ -33,27 +45,49 @@ export default {
         width: "0",
         height: "0",
       },
-      dis: {}
+      dis: {},
+      img_content: ''
     };
   },
   methods: {
     testData() {
       console.log("test");
     },
+    searchImg() {
+      this.$axios({
+        method: "get",
+        url: "/search/",
+        params: {
+          keyWords: this.img_content + "+icon",
+          imgNum: 10,
+        },
+      }).then((res) => {
+        this.$store.state.img_content = this.img_content;
+        console.log(res.data);
+        let img_urls = [];
+        res.data.forEach((it) => {
+          img_urls.push(it);
+        });
+        this.viewImg(img_urls[1]);
+      });
+    },
     readImgFile(file) {
+      let cur_src = URL.createObjectURL(file);
+      this.viewImg(cur_src);
+      this.$store.state.img_content = file.name.split(".")[0];
+      return false;
+    },
+    viewImg(src) {
       const _this = this;
       const potrace = require("potrace");
       let trace = new potrace.Potrace();
-      let cur_src = URL.createObjectURL(file);
-      trace.loadImage(cur_src, (err) => {
+      trace.loadImage(src, (err) => {
         if (err) throw err;
         let res_svg = trace.getSVG();
         _this.separateSvgComponents(res_svg.toString());
         _this.upload_display = false;
         _this.svg_display = true;
       });
-      this.$store.state.img_content = file.name.split('.')[0]
-      return false;
     },
     separateSvgComponents(src) {
       const _this = this;
@@ -73,23 +107,28 @@ export default {
       let mid_end = src.indexOf(`"`);
       let mid = src.substr(0, mid_end);
       let tail = src.substr(mid_end);
-      let dis = {coms: []};
+      let dis = { coms: [] };
       dis.width = 100;
       const scale = dis.width / width;
+      _this.$store.state.ex_scale = scale;
       dis.height = scale * height;
       dis.style = {
         width: dis.width + "px",
-        height: dis.height + "px"
+        height: dis.height + "px",
       };
       const tranx = width * 0.5 * (scale - 1);
       const trany = height * 0.5 * (scale - 1);
-      dis.coms.push(`<svg width="${width}" height="${height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="M${mid}"></path></svg>`)
+      dis.coms.push(
+        `<svg width="${width}" height="${height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="M${mid}"></path></svg>`
+      );
       mid.split("M").forEach((it) => {
         const cur_svg = head + "M" + it + tail;
         _this.svg_list.push(cur_svg);
         _this.$store.state.svg_list.push(cur_svg);
         _this.$store.state.d_list.push("M" + it);
-        dis.coms.push(`<svg width="${width}" height="${height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="M${it}"></path></svg>`)
+        dis.coms.push(
+          `<svg width="${width}" height="${height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="M${it}"></path></svg>`
+        );
       });
       _this.dis = dis;
     },

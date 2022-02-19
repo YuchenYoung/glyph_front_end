@@ -10,7 +10,7 @@ export default new Vuex.Store({
     d_list: [],
     svg_width: 0,
     svg_height: 0,
-    // ori_svg: "",
+    ex_scale: 1,
     svg_list: [],
     props: [],
   },

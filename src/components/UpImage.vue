@@ -2,6 +2,7 @@
   <div style="text-align: center">
     <h2>Image Upload</h2>
     <el-button v-if="false" @click="testData">Test Data</el-button>
+    <div id="svgMeasure" ref="svgSize"></div>
     <div v-show="upload_display">
       <el-input
         style="width: auto"
@@ -51,25 +52,26 @@ export default {
   },
   methods: {
     testData() {
-      console.log("test");
+      console.log(this.$refs.svgSize.clientHeight);
     },
     searchImg() {
-      this.$axios({
-        method: "get",
-        url: "/search/",
-        params: {
-          keyWords: this.img_content + "+icon",
-          imgNum: 10,
-        },
-      }).then((res) => {
-        this.$store.state.img_content = this.img_content;
-        console.log(res.data);
-        let img_urls = [];
-        res.data.forEach((it) => {
-          img_urls.push(it);
-        });
-        this.viewImg(img_urls[1]);
-      });
+      // this.$axios({
+      //   method: "get",
+      //   url: "/search/",
+      //   params: {
+      //     keyWords: this.img_content + "+icon",
+      //     imgNum: 10,
+      //   },
+      // }).then((res) => {
+      //   this.$store.state.img_content = this.img_content;
+      //   console.log(res.data);
+      //   let img_urls = [];
+      //   res.data.forEach((it) => {
+      //     img_urls.push(it);
+      //   });
+      //   this.viewImg(img_urls[4]);
+      // });
+      this.viewImg('https://img0.baidu.com/it/u=92751486,4059642266&fm=253&fmt=auto&app=138&f=PNG?w=500&h=490');
     },
     readImgFile(file) {
       let cur_src = URL.createObjectURL(file);
@@ -91,9 +93,6 @@ export default {
     },
     separateSvgComponents(src) {
       const _this = this;
-      // this.$store.state.ori_svg = src;
-      _this.svg_list.push(src);
-      _this.$store.state.svg_list.push(src);
       let mid_st_str = `<path d="`;
       let mid_start = src.indexOf(mid_st_str) + mid_st_str.length;
       let head = src.substring(0, mid_start);
@@ -118,20 +117,46 @@ export default {
       };
       const tranx = width * 0.5 * (scale - 1);
       const trany = height * 0.5 * (scale - 1);
-      dis.coms.push(
-        `<svg width="${width}" height="${height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="M${mid}"></path></svg>`
-      );
+      let ori_ds = [];
       mid.split("M").forEach((it) => {
-        const cur_svg = head + "M" + it + tail;
+        ori_ds.push("M" + it);
+      });
+      const filter_svgs = _this.filterSepSvgs(ori_ds);
+      _this.svg_list.push(head + filter_svgs.join(' ') + tail);
+      _this.$store.state.svg_list.push(head + filter_svgs.join(' ') + tail);
+      dis.coms.push(
+        `<svg width="${width}" height="${height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="${filter_svgs.join(' ')}"></path></svg>`
+      );
+      filter_svgs.forEach((it) => {
+        const cur_svg = head + it + tail;
         _this.svg_list.push(cur_svg);
         _this.$store.state.svg_list.push(cur_svg);
-        _this.$store.state.d_list.push("M" + it);
+        _this.$store.state.d_list.push(it);
         dis.coms.push(
-          `<svg width="${width}" height="${height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="M${it}"></path></svg>`
+          `<svg width="${width}" height="${height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="${it}"></path></svg>`
         );
       });
       _this.dis = dis;
     },
+    filterSepSvgs(d_list) {
+      let fil_ds = [];
+      d_list.forEach(it => {
+        let judge = true;
+        d_list.forEach(out => {
+          if (!judge || it == out) return;
+          this.$refs.svgSize.innerHTML = `<svg><path d="${out}"></path></svg>`;
+          const out_size = this.$refs.svgSize.childNodes[0].childNodes[0].getBoundingClientRect();
+          this.$refs.svgSize.innerHTML = `<svg><path d="${out+it}"></path></svg>`;
+          const tog_size = this.$refs.svgSize.childNodes[0].childNodes[0].getBoundingClientRect();
+          this.$refs.svgSize.innerHTML = '';
+          if (Math.abs(out_size.height - tog_size.height) <= 1e-6 && Math.abs(out_size.width - tog_size.width) <= 1e-6) {
+            judge = false;
+          }
+        });
+        if (judge) fil_ds.push(it);
+      });
+      return fil_ds;
+    }
   },
 };
 </script>

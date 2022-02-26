@@ -9,23 +9,41 @@ const routes = [
     redirect: '/index'
   },
   {
-    path: '/svg',
-    name: 'svg',
-    component: () => import('../views/Svg.vue')
+    path: '/test',
+    name: 'test',
+    component: () => import('../views/Test.vue')
+  },
+  {
+    path: '/whole',
+    name: 'whole',
+    component: () => import('../views/Whole.vue')
   },
   {
     path: '/index',
     name: 'index',
-    component: () => import('../views/Index.vue')
+    component: () => import('../views/Index.vue'),
+    children: [
+      {
+        path: '',
+        redirect: 'data'
+      },
+      {
+        path: 'data',
+        name: 'data',
+        component: () => import('../components/UpFile.vue')
+      },
+      {
+        path: 'image',
+        name: 'image',
+        component: () => import('../components/UpImage.vue')
+      },
+      {
+        path: 'vis',
+        name: 'vis',
+        component: () => import('../components/Visualization.vue')
+      }
+    ]
   },
-  // {
-  //   path: '/about',
-  //   name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-  //   component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
-  // }
 ]
 
 const router = new VueRouter({

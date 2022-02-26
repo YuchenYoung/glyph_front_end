@@ -1,9 +1,9 @@
 <template>
-  <div style="text-align: center">
+  <div style="text-align: center" class="block-area">
     <h2>Image Upload</h2>
     <el-button v-if="false" @click="testData">Test Data</el-button>
     <div id="svgMeasure" ref="svgSize"></div>
-    <div v-show="upload_display">
+    <div v-show="!imgReady">
       <el-input
         style="width: auto"
         placeholder="Search content"
@@ -27,8 +27,8 @@
         <div class="el-upload__text">Click or drag the file here to upload</div>
       </el-upload>
     </div>
-    <ul v-show="svg_display">
-      <li v-for="it in dis.coms" :key="it" v-html="it" :style="dis.style"></li>
+    <ul v-show="imgReady">
+      <li v-for="it in previewElements" :key="it" v-html="it" :style="previewStyle"></li>
     </ul>
   </div>
 </template>
@@ -49,6 +49,18 @@ export default {
       dis: {},
       img_content: ''
     };
+  },
+  computed: {
+    imgReady() {
+      return this.$store.state.img_ready;
+    },
+    previewElements() {
+      return this.$store.state.img_preview.eles;
+    },
+    previewStyle() {
+      return this.$store.state.img_preview.style;
+    },
+
   },
   methods: {
     testData() {
@@ -71,7 +83,8 @@ export default {
       //   });
       //   this.viewImg(img_urls[4]);
       // });
-      this.viewImg('https://img0.baidu.com/it/u=92751486,4059642266&fm=253&fmt=auto&app=138&f=PNG?w=500&h=490');
+      // this.viewImg('https://img0.baidu.com/it/u=92751486,4059642266&fm=253&fmt=auto&app=138&f=PNG?w=500&h=490');
+      this.viewImg('https://img1.baidu.com/it/u=3988299520,1364854370&fm=253&fmt=auto&app=138&f=JPEG?w=450&h=468');
     },
     readImgFile(file) {
       let cur_src = URL.createObjectURL(file);
@@ -86,61 +99,75 @@ export default {
       trace.loadImage(src, (err) => {
         if (err) throw err;
         let res_svg = trace.getSVG();
-        _this.separateSvgComponents(res_svg.toString());
-        _this.upload_display = false;
-        _this.svg_display = true;
+        // _this.separateSvgComponents(res_svg.toString());
+        _this.uploadSegmentation(_this.segmentSvg(res_svg.toString()));
+        _this.$store.state.img_ready = true;
       });
     },
-    separateSvgComponents(src) {
-      const _this = this;
+    segmentSvg(src) {
+      let retval = {svgs: [], ds: []};
       let mid_st_str = `<path d="`;
       let mid_start = src.indexOf(mid_st_str) + mid_st_str.length;
       let head = src.substring(0, mid_start);
-      let width = +head.split(`width="`)[1].split(`"`)[0];
-      let height = +head.split(`height="`)[1].split(`"`)[0];
-      _this.svg_style.width = width + "px";
-      _this.svg_style.height = height + "px";
-      _this.$store.state.svg_width = width;
-      _this.$store.state.svg_height = height;
+      retval.width = +head.split(`width="`)[1].split(`"`)[0];
+      retval.height = +head.split(`height="`)[1].split(`"`)[0];
       src = src.substr(mid_start + 1);
       let mid_end = src.indexOf(`"`);
       let mid = src.substr(0, mid_end);
       let tail = src.substr(mid_end);
-      let dis = { coms: [] };
-      dis.width = 100;
-      const scale = dis.width / width;
-      _this.$store.state.ex_scale = scale;
-      dis.height = scale * height;
-      dis.style = {
-        width: dis.width + "px",
-        height: dis.height + "px",
-      };
-      const tranx = width * 0.5 * (scale - 1);
-      const trany = height * 0.5 * (scale - 1);
       let ori_ds = [];
       mid.split("M").forEach((it) => {
         ori_ds.push("M" + it);
       });
-      const filter_svgs = _this.filterSepSvgs(ori_ds);
-      _this.svg_list.push(head + filter_svgs.join(' ') + tail);
-      _this.$store.state.svg_list.push(head + filter_svgs.join(' ') + tail);
-      dis.coms.push(
-        `<svg width="${width}" height="${height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="${filter_svgs.join(' ')}"></path></svg>`
-      );
-      filter_svgs.forEach((it) => {
-        const cur_svg = head + it + tail;
-        _this.svg_list.push(cur_svg);
-        _this.$store.state.svg_list.push(cur_svg);
-        _this.$store.state.d_list.push(it);
-        dis.coms.push(
-          `<svg width="${width}" height="${height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="${it}"></path></svg>`
-        );
+      const filter_ds = this.filterSepSvgs(ori_ds, retval.width, retval.height);
+      retval.svgs.push(head + filter_ds.join(' ') + tail);
+      retval.ds.push(filter_ds.join(' '));
+      filter_ds.forEach((it) => {
+        retval.ds.push(it);
+        retval.svgs.push(head + it + tail);
       });
-      _this.dis = dis;
+      return retval;
     },
-    filterSepSvgs(d_list) {
+    uploadSegmentation(obj) {
+      this.svg_style.width = obj.width + "px";
+      this.svg_style.height = obj.height + "px";
+      this.$store.state.svg_width = obj.width;
+      this.$store.state.svg_height = obj.height;
+      let dis = { eles: [] };
+      dis.width = 100;
+      const scale = dis.width / obj.width;
+      dis.height = scale * obj.height;
+      dis.style = {
+        width: dis.width + "px",
+        height: dis.height + "px",
+      };
+      const tranx = obj.width * 0.5 * (scale - 1);
+      const trany = obj.height * 0.5 * (scale - 1);
+      this.svg_list = obj.svgs;
+      this.$store.state.svg_list = obj.svgs;
+      this.$store.state.d_list = obj.ds;
+      obj.ds.forEach((it) => {
+        dis.eles.push(
+          `<svg width="${obj.width}" height="${obj.height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="${it}"></path></svg>`
+        );
+        this.$refs.svgSize.innerHTML = `<svg><path d="${it}"></path></svg>`;
+        const cur_size = this.$refs.svgSize.childNodes[0].childNodes[0].getBoundingClientRect();
+        this.$refs.svgSize.innerHTML = '';
+        this.$store.state.paths_size.push({width: cur_size.width, height: cur_size.height});
+        this.$store.state.img_type.push(this.judgeImgType(it, cur_size))
+      });
+      // this.dis = dis;
+      this.$store.state.img_preview = dis;
+    },
+    filterSepSvgs(d_list, img_width, img_height) {
       let fil_ds = [];
       d_list.forEach(it => {
+        this.$refs.svgSize.innerHTML = `<svg><path d="${it}"></path></svg>`;
+        const cur_size = this.$refs.svgSize.childNodes[0].childNodes[0].getBoundingClientRect();
+        this.$refs.svgSize.innerHTML = '';
+        if (cur_size.width / img_width < 0.05 && cur_size.height / img_height < 0.05) {
+          return;
+        }
         let judge = true;
         d_list.forEach(out => {
           if (!judge || it == out) return;
@@ -156,6 +183,13 @@ export default {
         if (judge) fil_ds.push(it);
       });
       return fil_ds;
+    },
+    judgeImgType(d, size) {
+      if (size.width / size.height >= 4 || size.width / size.height <= 0.25) {
+        return 'linear';
+      } else {
+        return 'square';
+      }
     }
   },
 };

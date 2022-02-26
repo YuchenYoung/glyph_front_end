@@ -20,6 +20,7 @@
         >TestSVG</el-button
       >
     </div>
+    <div ref="testSvgSize"></div>
     <div>
       <div v-for="(item, index) in svg_list" :key="item">
         <el-divider></el-divider>
@@ -101,52 +102,84 @@ export default {
           }
           let res_svg = trace.getSVG();
           console.log(res_svg);
-          this.separateSvgComponents(res_svg);
+          this.displayResult(this.segmentSvg(res_svg.toString()));
+          // this.separateSvgComponents(res_svg);
         });
       });
       console.log(this.svg_list);
     },
-    separateSvgComponents(src) {
-      // const _this = this;
-      let svg_obj = {
-        code: src,
-        style: {},
-        com_list: [],
-        path_list: [],
-        width: 0,
-        height: 0,
-      };
+    segmentSvg(src) {
+      let retval = {svgs: [], ds: []};
       let mid_st_str = `<path d="`;
       let mid_start = src.indexOf(mid_st_str) + mid_st_str.length;
       let head = src.substring(0, mid_start);
-      let ori_width = +head.split(`width="`)[1].split(`"`)[0];
-      let ori_height = +head.split(`height="`)[1].split(`"`)[0];
+      retval.width = +head.split(`width="`)[1].split(`"`)[0];
+      retval.height = +head.split(`height="`)[1].split(`"`)[0];
+      src = src.substr(mid_start + 1);
+      let mid_end = src.indexOf(`"`);
+      let mid = src.substr(0, mid_end);
+      let tail = src.substr(mid_end);
+      let ori_ds = [];
+      mid.split("M").forEach((it) => {
+        ori_ds.push("M" + it);
+      });
+      const filter_ds = this.filterSepSvgs(ori_ds, retval.width, retval.height);
+      retval.svgs.push(head + filter_ds.join(' ') + tail);
+      retval.ds.push(filter_ds.join(' '));
+      filter_ds.forEach((it) => {
+        retval.ds.push(it);
+        retval.svgs.push(head + it + tail);
+      });
+      return retval;
+    },
+    filterSepSvgs(d_list, img_width, img_height) {
+      let fil_ds = [];
+      d_list.forEach(it => {
+        let judge = true;
+        this.$refs.testSvgSize.innerHTML = `<svg><path d="${it}"></path></svg>`;
+        const cur_size = this.$refs.testSvgSize.childNodes[0].childNodes[0].getBoundingClientRect();
+        this.$refs.testSvgSize.innerHTML = '';
+        if (cur_size.width / img_width < 0.05 && cur_size.height / img_height < 0.05) {
+          return;
+        }
+        d_list.forEach(out => {
+          if (!judge || it == out) return;
+          this.$refs.testSvgSize.innerHTML = `<svg><path d="${out}"></path></svg>`;
+          const out_size = this.$refs.testSvgSize.childNodes[0].childNodes[0].getBoundingClientRect();
+          this.$refs.testSvgSize.innerHTML = `<svg><path d="${out+it}"></path></svg>`;
+          const tog_size = this.$refs.testSvgSize.childNodes[0].childNodes[0].getBoundingClientRect();
+          this.$refs.testSvgSize.innerHTML = '';
+          if (Math.abs(out_size.height - tog_size.height) <= 1e-6 && Math.abs(out_size.width - tog_size.width) <= 1e-6) {
+            judge = false;
+          }
+        });
+        if (judge) fil_ds.push(it);
+      });
+      return fil_ds;
+    },
+    displayResult(obj) {
+      let svg_obj = {
+        code: obj.svgs[0],
+        style: {},
+        com_list: [],
+        width: 0,
+        height: 0,
+      };
       let width = 100;
-      let scale = width / ori_width;
-      let height = ori_height * scale;
-      let tranx = ori_width * 0.5 * (scale - 1);
-      let trany = ori_height * 0.5 * (scale - 1);
+      let scale = width / obj.width;
+      let height = obj.height * scale;
+      let tranx = obj.width * 0.5 * (scale - 1);
+      let trany = obj.height * 0.5 * (scale - 1);
       svg_obj.style.width = width + "px";
       svg_obj.style.height = height + "px";
       svg_obj.width = width;
       svg_obj.height = height;
-      src = src.substr(mid_start + 1);
-      let mid_end = src.indexOf(`"`);
-      let mid = src.substr(0, mid_end);
-      // let tail = src.substr(mid_end);
-      mid.split("M").forEach((it) => {
-        // svg_obj.com_list.push(head + "M" + it + tail);
+      obj.ds.forEach((it) => {
         svg_obj.com_list.push(
-          `<svg width="${ori_width}" height="${ori_height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="M${it}"></path></svg>`
+          `<svg width="${obj.width}" height="${obj.height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="${it}"></path></svg>`
         );
-        svg_obj.path_list.push("M" + it);
       });
-      if (
-        // svg_obj.path_list.length < 10 &&
-        this.svg_list.length < this.search_num
-      ) {
-        this.svg_list.push(svg_obj);
-      }
+      this.svg_list.push(svg_obj);
     },
   },
 };

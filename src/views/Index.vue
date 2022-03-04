@@ -1,48 +1,63 @@
 <template>
   <el-container>
-    <el-aside style="width: auto">
-      <navigator></navigator>
-    </el-aside>
-    <el-main>
-      <router-view></router-view>
-    </el-main>
+    <el-header height='80px'> MetaGlyph </el-header>
+    <el-container>
+      <el-aside style="width: auto">
+        <navigator></navigator>
+      </el-aside>
+      <el-main>
+        <router-view></router-view>
+      </el-main>
+    </el-container>
   </el-container>
 </template>
 
 <script>
-import Navigator from '../components/Navigator.vue'
+import Navigator from "../components/Navigator.vue";
 export default {
   name: "Index",
   components: {
-    "navigator": Navigator
+    navigator: Navigator,
   },
 };
 </script>
 
 <style lang="less">
+@import "../assets/font/font.css";
+@themeYelllow: #e4ae40;
+@bgGray: #f8f6f0;
 
-.el-container, .el-row, .el-col {
+
+.el-container,
+.el-row,
+.el-col {
   height: 100%;
 }
 
 .el-aside {
-  width: auto;
+  width: 80px;
 }
 
 .el-main {
   padding: 0;
 }
 
-.el-aside > ul, .block-area {
+.el-aside > ul,
+.el-header, .block-area {
   margin: 16px 12px 0;
   height: 95%;
-  background-color: #fafafa;
-  border: 1px solid #c0c0c0;
-  border-radius: 10px;
+  background-color: @bgGray;
+  // border: 2px solid @themeYelllow;
+  border-radius: 8px;
 }
 
-</style>
-
-<style lang="less" scoped>
-
+.el-header {
+  font-family: "QuiteMagical";
+  letter-spacing: 5px;
+  font-size: 90px;
+  color: @bgGray;
+  text-align: center;
+  height: 200px;
+  background-color: @themeYelllow;
+}
 </style>

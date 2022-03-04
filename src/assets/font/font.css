@@ -1,0 +1,21 @@
+@font-face {
+  font-family: 'LemonJelly'; /* 重命名字体名 */
+  src: url('LemonJelly.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'QuiteMagical'; /* 重命名字体名 */
+  src: url('QuiteMagical.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'VeganStyle'; /* 重命名字体名 */
+  src: url('VeganStyle.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+

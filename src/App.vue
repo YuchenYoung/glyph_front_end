@@ -5,7 +5,7 @@
 </template>
 
 <script>
-  
+
   export default {
     name: 'App',
     components: {
@@ -20,9 +20,13 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50; */
+  @import './assets/font/font.css';
+  @themeYelllow: #e4ae40;
+  @bgGray: #f8f6f0;
+  background-color: @themeYelllow;
 }
 
 #nav {
-  padding: 30px;
+  // padding: 30px;
 }
 </style>

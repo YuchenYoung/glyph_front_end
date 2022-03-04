@@ -1,5 +1,5 @@
 <template>
-  <div style="text-align: center;" class="block-area">
+  <div style="text-align: center" class="block-area">
     <h2>Data Upload</h2>
     <el-button v-if="false" @click="testData">Test Data</el-button>
     <el-upload
@@ -15,8 +15,19 @@
       <div class="el-upload__text">Click or drag the file here to upload</div>
     </el-upload>
     <div v-show="dataReady" style="margin-top: 20px">
-      <el-table :data="tableData" border stripe height="300px" style="width: 100%">
-        <el-table-column v-for="it in props" :key="it" :prop="it" :label="it"></el-table-column>
+      <el-table
+        :data="tableData"
+        border
+        stripe
+        height="300px"
+        style="width: 100%"
+      >
+        <el-table-column
+          v-for="it in props"
+          :key="it"
+          :prop="it"
+          :label="it"
+        ></el-table-column>
       </el-table>
     </div>
   </div>
@@ -31,10 +42,10 @@ export default {
     return {
       table_display: false,
       upload_display: true,
-      // data_ready: [], 
+      // data_ready: [],
       // table_data: false,
       // props: [],
-      data_type: []
+      data_type: [],
     };
   },
   computed: {
@@ -46,9 +57,9 @@ export default {
     },
     props() {
       return this.$store.state.props;
-    }
+    },
   },
-  created() { 
+  created() {
     console.log(this.$store.state);
     this.table_data = this.$store.state.data;
     this.data_ready = this.$store.state.data_ready;
@@ -88,35 +99,71 @@ export default {
         // this.props = props;
         this.$store.state.props = props;
         console.log(props);
-        props.forEach(it => {
-          this.$store.state.data_type.push(this.judgeDataType(it, tmp_data.map(d => d[it])));
+        props.forEach((it) => {
+          this.$store.state.data_type[it] = 
+            this.judgeDataType(it,tmp_data.map((d) => d[it]))
         });
-        console.log(this.data_type);
+        console.log(this.$store.state.data_type);
       };
       return false;
     },
-    judgeDataType(col, arr) {
-      const value_type = typeof(arr[0]);
-      if (value_type == typeof(0)) {
-        this.data_type[col] = "number";
-        return "number";
-      } else if (value_type == typeof("")) {
-        const key_set = new Set();
-        arr.forEach(it => {
-          if (key_set.size > 7) {
-            return;
-          }
-          if (!key_set.has(it)) {
-            key_set.add(it);
-          }
-        })
-        if (key_set.size > 7) {
-          return 'string';
-        } else {
-          return 'catogary';
+    isDegreeData(arr) {
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i] > 1 || arr[i] < 0) {
+          return false;
         }
       }
-    }
+      return true;
+    },
+    isInteger(arr) {
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i] % 1 !== 0) {
+          return false;
+        }
+      }
+      return true;
+    },
+    isDataInSmallRange(arr) {
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i] > 5 || arr[i] < 0) {
+          return false;
+        }
+      }
+      return true;
+    },
+    isCategorical(arr) {
+      const key_set = new Set();
+      arr.forEach((it) => {
+        if (key_set.size > 7) {
+          return false;
+        }
+        if (!key_set.has(it)) {
+          key_set.add(it);
+        }
+      });
+      return key_set.size <= 7;
+    },
+    judgeDataType(col, arr) {
+      const value_type = typeof arr[0];
+      if (value_type == typeof 0) {
+        if (this.isInteger(arr)) {
+          if (this.isDataInSmallRange(arr)) {
+            return 'small_range';
+          }
+        } else {
+          if (this.isDegreeData(arr)) {
+            return 'degree';
+          }
+        }
+        return "number";
+      } else if (value_type == typeof "") {
+        if (this.isCategorical(arr)) {
+          return "category";
+        } else {
+          return "string";
+        }
+      }
+    },
   },
 };
 </script>
@@ -131,5 +178,4 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-
 </style>

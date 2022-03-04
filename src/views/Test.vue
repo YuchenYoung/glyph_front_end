@@ -16,16 +16,15 @@
         :min="1"
         style="margin-left: 20px"
       ></el-input-number>
-      <el-button @click="searchImg" style="margin-left: 20px"
-        >TestSVG</el-button
-      >
+      <el-button type="success" @click="searchImg" style="margin-left: 20px">TestSVG</el-button>
+      <el-button @click="exampleImg">Default</el-button>
     </div>
     <div ref="testSvgSize"></div>
     <div>
       <div v-for="(item, index) in svg_list" :key="item">
         <el-divider></el-divider>
         <h3>Image {{ index + 1 }}</h3>
-        <div v-html="item.code" class="svg-area"></div>
+        <!-- <div v-html="item.code" class="svg-area"></div> -->
         <ul>
           <li
             v-for="it in item.com_list"
@@ -69,6 +68,16 @@ export default {
         console.log(res.data);
         this.server_response = res.data;
       });
+    },
+    exampleImg() {
+      let img_urls = [
+        'https://img1.baidu.com/it/u=3988299520,1364854370&fm=253&fmt=auto&app=138&f=JPEG?w=450&h=468',
+        'https://cdn3.iconfinder.com/data/icons/food-and-drink-55/50/burger-13-2-512.png',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQX9DMqAGXnvFSDHs_Qd-d2Xl2qcwrHo8gbA&usqp=CAU',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTh4kVYP6xekBhOtr4e_xzvHT9vUxz6U7oRCw&usqp=CAU',
+      ]
+      this.img_urls = img_urls;
+      this.imgToSVG();
     },
     searchImg() {
       console.log(this.search_keys);

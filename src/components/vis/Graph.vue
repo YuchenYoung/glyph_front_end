@@ -2,28 +2,31 @@
   <div id="visD3" style="text-align: center" class="block-area">
     <h2>Visualization</h2>
     <div style="margin-bottom: 20px" v-show="!vis_display && !glyph_display">
-      <el-button @click="checkData">Check Data</el-button>
+      <!-- <el-button @click="checkData">Check Data</el-button>
       <el-button type="success" @click="generateVis">Car Data</el-button>
       <el-button type="primary" @click="visPrepare($event, true)">Burger Data</el-button>
-      <el-button @click="visPrepare($event, false)">Burger Map Only</el-button>
+      <el-button @click="visPrepare($event, false)">Burger Map Only</el-button> -->
+      <el-button type="success" @click="generateGlyphs"
+        >Generate Glyphs</el-button
+      >
+      <el-button type="primary" @click="generateGraph">Draw Graph</el-button>
     </div>
-    <p v-show="dis_map">{{ mapper }}</p>
-    <ul v-show="glyph_display">
+    <!-- <p v-show="dis_map">{{ mapper }}</p> -->
+    <!-- <ul v-show="glyph_display">
       <li v-for="(i, index) in dataSize" :key="i" style="width: 120px; height: 120px">
         <svg :id="'glyph' + index"></svg>
       </li>
-    </ul>
+    </ul> -->
     <div ref="mainGraph" style="width: 96%; margin-left: 2%">
-      <svg v-show="vis_display" id="mainsvg" class="svgs"></svg>
+      <svg v-show="vis_display" id="mainsvg" class="svgs" style="border: 2px solid"></svg>
     </div>
-    
   </div>
 </template>
 
 <script>
 import * as d3 from "d3";
 export default {
-  name: 'Graph',
+  name: "Graph",
   data() {
     return {
       vis_display: false,
@@ -40,11 +43,70 @@ export default {
     },
     pathSize() {
       return this.$store.state.paths_size;
-    }
+    },
   },
   methods: {
     checkData() {
       console.log(this.$store.state);
+    },
+    getEncodingType(data_type, ele_type) {
+      if (data_type == "string" || data_type == "none") {
+        return "none";
+      }
+      if (data_type == "category") {
+        return "color";
+      }
+      if (data_type == "degree") {
+        return "alpha";
+      }
+      if (data_type == "small_range") {
+        return "number";
+      }
+      if (ele_type == "linear_horizon") {
+        return "length";
+      }
+      if (ele_type == "linear_vertical") {
+        return "size";
+      }
+      if (ele_type == "square") {
+        return "size";
+      }
+      return "none";
+    },
+    dataEncoding() {
+      // const props = this.$store.state.props;
+      const data_type = this.$store.state.data_type;
+      const ele_type = this.$store.state.img_type;
+      const mapping_res = this.$store.state.mapper;
+      console.log("----------------------");
+      console.log(data_type);
+      console.log(ele_type);
+      console.log(mapping_res);
+      let encoding_res = [];
+      // encoding_res.fill()
+      mapping_res.forEach((it) => {
+        encoding_res.push({
+          prop: it.prop,
+          element: it.element,
+          encoding: this.getEncodingType(
+            data_type[it.prop],
+            ele_type[it.element]
+          ),
+        });
+      });
+      for (let i = 1; i < ele_type.length; i++) {
+        if (mapping_res.map((d) => d.element).includes(i)) continue;
+        encoding_res.push({
+          prop: "none",
+          element: i,
+          encoding: this.getEncodingType("none", ele_type[i]),
+        });
+      }
+      encoding_res.sort((a, b) => {
+        return a.element - b.element;
+      });
+      console.log(encoding_res);
+      return encoding_res;
     },
     visPrepare(ev, vis) {
       const up_data = {
@@ -64,7 +126,8 @@ export default {
       }).then((res) => {
         const mapper = res.data;
         console.log(mapper);
-        this.mapper = mapper;
+        // this.mapper = mapper;
+        this.$store.state.mapper = mapper;
         this.dis_map = true;
         if (!vis) return;
         this.generateGlyphs();
@@ -281,7 +344,8 @@ export default {
       console.log(this.mapper);
       console.log(this.path_size);
       this.glyph_display = true;
-      const mapper = this.mapper;
+      // const mapper = this.mapper;
+      const mapper = this.$store.state.mapper;
       const data = this.$store.state.data;
       const props = this.$store.state.props;
       const ds = this.$store.state.d_list;
@@ -297,7 +361,7 @@ export default {
         if (it == "Calories") return;
         dprop[mapper[it]] = it;
       });
-      console.log('=====================');
+      console.log("=====================");
       console.log(dprop);
       for (let i = 0; i < data.length; i++) {
         console.log(`now ${i}`);
@@ -327,6 +391,97 @@ export default {
             `translate(${tranx},${trany}),scale(${scale},${scale})`
           );
       }
+    },
+    drawGraph(p_encoding) {
+      console.log(p_encoding);
+      
+      this.vis_display = true;
+      const graph_width = this.$refs.mainGraph.getBoundingClientRect().width;
+      const _this = this;
+      const encoding = p_encoding;
+      const vis_svg = d3.select("#mainsvg");
+      vis_svg.attr("width", graph_width).attr("height", graph_width * 0.6);
+      const vis_width = +vis_svg.attr("width");
+      // const vis_height = +vis_svg.attr("height");
+      const margin = { top: 50, right: 100, bottom: 50, left: 100 };
+      const inner_width = vis_width - margin.left - margin.right;
+      // const inner_height = vis_height - margin.top - margin.bottom;
+      const g = vis_svg
+        .append("g")
+        .attr("id", "maingroup")
+        .attr("transform", `translate(${margin.left}, ${margin.top})`)
+
+      let sub_trans = {translate_x: 0, translate_y: 0};
+      let pos_x = 0, pos_y = 0, next_y = 0;
+      const data = this.$store.state.data;
+      const ds = this.$store.state.d_list;
+      let img_width = this.$store.state.svg_width;
+      let img_height = this.$store.state.svg_height;
+
+      const render_number = (base, d, size, num) => {
+        console.log(num);
+        const sw = size.height;
+        for (let k = 0; k < num; k++) {
+          const tran = sub_trans.translate_y + k * sw;
+          base.append("path").attr("d", d).attr("transform", `translate(0, ${tran})`);
+        }
+        sub_trans.translate_y += (num - 1) * sw;
+      };
+
+      const render_simple = (base, d, size) => {
+        render_number(base, d, size, 1);
+      };
+
+      const render_glyph_transform = (glyph, width) => {
+        let scale = width / img_width;
+        let height = img_height * scale;
+        if (pos_x + width > inner_width) {
+          pos_x = 0;
+          pos_y = next_y;
+        }
+        //const tranx = img_width * 0.5 * (scale - 1);
+        //const trany = img_height * 0.5 * (scale - 1);
+        // const tranx = pos_x;
+        // const trany = pos_y;
+        glyph
+          .attr("width", width)
+          .attr("height", height)
+          .attr(
+            "transform",
+            `translate(${pos_x},${pos_y}),scale(${scale},${scale})`
+          );
+        pos_x += width;
+        next_y = Math.max(next_y, pos_y + height);
+      }
+
+      const render_data = (data) => {
+        const glyph = g.append("g").attr("class", "burg");
+        for (let i = 1; i < ds.length; i++) {
+          let pos = encoding.findIndex(d => d.element == i);
+          console.log(pos);
+          let encoding_type = encoding[pos]['encoding'];
+          if (encoding_type != 'number') {
+            render_simple(glyph, ds[i], _this.$store.state.paths_size[i]);
+          } else {
+            console.log(encoding[pos]["prop"]);
+            render_number(glyph, ds[i], _this.$store.state.paths_size[i], data[encoding[pos]["prop"]]);
+          }
+        }
+        render_glyph_transform(glyph, 120);
+      };
+
+      const render = (data) => {
+        data.forEach(it => {
+          render_data(it);
+        })
+      };
+
+      // render([data[0]]);
+      render(data);
+      
+    },
+    generateGraph() {
+      this.drawGraph(this.dataEncoding());
     },
   },
 };

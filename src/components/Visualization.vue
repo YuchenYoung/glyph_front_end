@@ -1,7 +1,10 @@
 <template>
   <el-row>
     <el-col :span="18">
-      <graph></graph>
+      <div id="visD3" style="text-align: center" class="block-area">
+        <p class="title">Visualization</p>
+        <graph :best="true"></graph>
+      </div>
     </el-col>
     <el-col :span="6">
       <alternative></alternative>

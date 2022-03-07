@@ -1,6 +1,6 @@
 <template>
   <div class="block-area" style="text-align: center">
-    <h2>Alternative</h2>
+    <p class="title">Alternative</p>
   </div>
 </template>
 

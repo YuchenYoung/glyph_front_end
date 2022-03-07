@@ -22,8 +22,19 @@
   color: #2c3e50; */
   @import './assets/font/font.css';
   @themeYelllow: #e4ae40;
-  @bgGray: #f8f6f0;
+  @bgGray: #fdf6e3;
   background-color: @themeYelllow;
+}
+
+.title {
+  text-align: left;
+  margin-left: 24px;
+  margin-top: 0;
+  padding-top: 16px;
+  font-size: 28px;
+  font-weight: 500;
+  font-family: "Lucida Sans Unicode";
+  position: relative;
 }
 
 #nav {

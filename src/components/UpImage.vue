@@ -1,32 +1,24 @@
 <template>
-  <div style="text-align: center" class="block-area">
-    <h2>Image Upload</h2>
+  <div class="block-area">
+    <p class="title">Metaphoric Image Gallery</p>
     <el-button v-if="false" @click="testData">Test Data</el-button>
     <div id="svgMeasure" ref="svgSize"></div>
-    <div v-show="!imgReady">
-      <el-input
-        style="width: auto"
-        placeholder="Search content"
-        v-model="img_content"
-        clearable
-      >
-      </el-input>
-      <el-button @click="searchImg" style="margin-left: 20px">Search</el-button>
-      <el-button type="primary" @click="simpleImg" style="margin-left: 20px">Simple</el-button>
-      <el-upload
-        class="upload-demo"
-        drag
-        :limit="1"
-        action=""
-        accept=".jpg, .png"
-        :before-upload="readImgFile"
-        style="margin-top: 20px"
-      >
-        <i class="el-icon-upload"></i>
-        <div class="el-upload__text">Click or drag the file here to upload</div>
-      </el-upload>
+    <div style="max-height: 450px; overflow-y: scroll; padding-left: 3%;">
+      <div v-for="(obj, index) in previewElements" :key="index">
+        <div style="display: inline-flex">
+          <p>Image {{ index }}</p>
+          <el-button size="mini" style="height: 50%; margin-top: 12px; margin-left: 16px;"
+          @click="setObjVis($event,index)">Vis</el-button>
+        </div>
+        <ul>
+          <li v-for="it in obj.eles" :key="it" v-html="it" :style="obj.style"></li>
+        </ul>
+        <graph v-if="obj.vis" :best="false" :obj="obj"></graph>
+        <p>{{ obj.info }}</p>
+      </div>
     </div>
-    <ul v-show="imgReady">
+
+    <ul v-show="false">
       <li
         v-for="it in previewElements"
         :key="it"
@@ -38,7 +30,9 @@
 </template>
 
 <script>
+import Graph from './vis/Graph.vue';
 export default {
+  components: { Graph },
   name: "UpImage",
   props: {},
   data() {
@@ -56,7 +50,8 @@ export default {
       search_num: 0,
       deal_num: 0,
       img_content: "",
-      // up_data: {},
+      last_time: 0,
+      deal_time: [],
     };
   },
   computed: {
@@ -64,10 +59,7 @@ export default {
       return this.$store.state.img_ready;
     },
     previewElements() {
-      return this.$store.state.img_preview.eles;
-    },
-    previewStyle() {
-      return this.$store.state.img_preview.style;
+      return this.$store.state.img_preview;
     },
     propLength() {
       return this.$store.state.props.length;
@@ -76,27 +68,43 @@ export default {
   watch: {
     deal_num(val) {
       console.log(`${val} ${this.search_num}`);
-      // if (val > 0 && val >= this.search_num) {
-      if (val > 0 && val == Math.max(1, parseInt(this.search_num * 0.1)) ) {
-        // if (val == 1) {
+      if (val > 0) {
+        const cur_time = new Date().getTime()
+        this.deal_time.push((cur_time - this.last_time) / 1000);
+        this.last_time = cur_time;
+      }
+      if (val > 0 && val == Math.max(1, parseInt(this.search_num * 0.1))) {
         this.getDataMap();
       }
     },
   },
+  created() {
+    console.log("now image created");
+    console.log(this.$store);
+    if (this.$store.state.img_ready == false) {
+      this.$store.state.img_preview = [];
+      this.searchImg();
+      // this.simpleImg();
+    }
+  },
   methods: {
     testData() {
       console.log(this.$refs.svgSize.clientHeight);
+    },
+    setObjVis(e, index) {
+      const curv = this.$store.state.img_preview[index].vis;
+      this.$store.state.img_preview[index].vis = !curv;
     },
     searchImg() {
       this.$axios({
         method: "get",
         url: "/search/",
         params: {
-          keyWords: this.img_content,
-          imgNum: 400,
+          keyWords: this.$store.state.theme,
+          imgNum: 100,
         },
       }).then((res) => {
-        this.$store.state.img_content = this.img_content;
+        this.$store.state.theme = this.img_content;
         console.log(res.data);
         let img_urls = [];
         res.data.forEach((it) => {
@@ -105,7 +113,6 @@ export default {
         this.search_num = img_urls.length;
         console.log(img_urls);
         this.loadImgs(img_urls);
-        // this.viewImg(img_urls[4]);
       });
       // let img_urls = [
       //   'https://img1.baidu.com/it/u=3988299520,1364854370&fm=253&fmt=auto&app=138&f=JPEG?w=450&h=468',
@@ -117,16 +124,19 @@ export default {
       // this.viewImg('https://img1.baidu.com/it/u=3988299520,1364854370&fm=253&fmt=auto&app=138&f=JPEG?w=450&h=468');
     },
     simpleImg() {
-      let img_urls = ['https://img1.baidu.com/it/u=3988299520,1364854370&fm=253&fmt=auto&app=138&f=JPEG?w=450&h=468'];
+      let img_urls = [
+        "https://img1.baidu.com/it/u=3988299520,1364854370&fm=253&fmt=auto&app=138&f=JPEG?w=450&h=468",
+      ];
       this.loadImgs(img_urls);
     },
     readImgFile(file) {
       let cur_src = URL.createObjectURL(file);
       this.viewImg(cur_src);
-      this.$store.state.img_content = file.name.split(".")[0];
+      this.$store.state.theme = file.name.split(".")[0];
       return false;
     },
     loadImgs(img_urls) {
+      this.last_time = new Date().getTime();
       img_urls.forEach((it) => {
         const _this = this;
         const potrace = require("potrace");
@@ -143,11 +153,9 @@ export default {
             // let obj = _this.segmentSvg(res_svg.toString());
             let obj = _this.segmentSvg(svg.toString());
             console.log(obj);
-            if (
-              obj.svgs.length >= _this.propLength &&
-              obj.svgs.length <= 2 * _this.propLength
-            ) {
+            if (obj.svgs.length >= 4 && obj.svgs.length <= 9) {
               _this.sep_objs.push(obj);
+              _this.uploadSegmentation(obj);
               // _this.up_data.svgsList.push(obj.svgs);
               _this.all_svgs.push(obj.svgs);
               _this.deal_num++;
@@ -173,18 +181,28 @@ export default {
       });
     },
     mapPartData(pos, num, best_img, best_score, best_map) {
-      console.log(`map part ${pos} ${num} ${best_img}`)
+      console.log(`map part ${pos} ${num} ${best_img}`);
       if (pos >= num) {
-        this.uploadSegmentation(this.sep_objs[best_img]);
+        // this.uploadSegmentation(this.sep_objs[best_img]);
         this.$store.state.mapper = best_map;
+        const obj = this.$store.state.img_preview[best_img];
+        this.$store.state.best_img = obj;
+        this.$store.state.img_ready = true;
+        this.$message({message: 'Image Ready', type: 'success'});
+        // this.$store.state.best_img = {
+        //   path_size: obj.path_size,
+        //   img_type: obj.img_type,
+        //   d_list: obj.d_list,
+        //   ori_size: obj.ori_size
+        // };
         return;
       }
       let up_data = {
-        // content: this.$store.state.img_content,
+        // content: this.$store.state.theme,
         content: "burger",
         dataProps: this.$store.state.props,
         // dataProps: ['Item', 'cheese', 'bacon', 'Calories'],
-        svgsList: this.all_svgs.slice(pos, pos + 4),
+        svgsList: this.all_svgs.slice(pos, pos + 2),
       };
       this.$axios({
         method: "post",
@@ -196,17 +214,30 @@ export default {
       }).then((res) => {
         console.log("~~~~~~~~~~~~~~~~~~~");
         console.log(res.data);
+        for (let i = 0; i < 2; i++) {
+          if (pos + i >= num) break;
+          this.$store.state.img_preview[pos + i].mapper = res.data.mappers[i];
+          this.$store.state.img_preview[pos + i].score = res.data.scores[i];
+          this.$store.state.img_preview[pos + i].times = res.data.times[i].concat([this.deal_time[pos + i]]);
+          this.$store.state.img_preview[pos + i].info = this.$store.state.img_preview[pos + i].times.join("--");
+        }
         if (res.data.score > best_score) {
           best_score = res.data.score;
           best_img = pos + res.data.best_img;
           best_map = res.data.mapper;
         }
-        this.mapPartData(pos + 4, this.all_svgs.length, best_img, best_score, best_map);
+        this.mapPartData(
+          pos + 2,
+          this.all_svgs.length,
+          best_img,
+          best_score,
+          best_map
+        );
       });
     },
     getDataMap() {
       console.log("===================");
-      this.mapPartData(0, this.all_svgs.length, -1, -1, [])
+      this.mapPartData(0, this.all_svgs.length, -1, -1, []);
     },
     segmentSvg(src) {
       let retval = { svgs: [], ds: [] };
@@ -233,11 +264,22 @@ export default {
       return retval;
     },
     uploadSegmentation(obj) {
-      this.svg_style.width = obj.width + "px";
-      this.svg_style.height = obj.height + "px";
-      this.$store.state.svg_width = obj.width;
-      this.$store.state.svg_height = obj.height;
-      let dis = { eles: [] };
+      let dis = { 
+        eles: [], 
+        style: {}, 
+        ori_size: {},
+        d_list: [],
+        img_type: [],
+        path_size: [],
+        info: "",
+        vis: false
+      };
+      // this.$store.state.svg_width = obj.width;
+      // this.$store.state.svg_height = obj.height;
+      dis.ori_size = {
+        width: obj.width,
+        height: obj.height
+      }
       dis.width = 100;
       const scale = dis.width / obj.width;
       dis.height = scale * obj.height;
@@ -249,7 +291,8 @@ export default {
       const trany = obj.height * 0.5 * (scale - 1);
       this.svg_list = obj.svgs;
       this.$store.state.svg_list = obj.svgs;
-      this.$store.state.d_list = obj.ds;
+      // this.$store.state.d_list = obj.ds;
+      dis.d_list = obj.ds;
       obj.ds.forEach((it) => {
         dis.eles.push(
           `<svg width="${obj.width}" height="${obj.height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="${it}"></path></svg>`
@@ -258,15 +301,16 @@ export default {
         const cur_size =
           this.$refs.svgSize.childNodes[0].childNodes[0].getBoundingClientRect();
         this.$refs.svgSize.innerHTML = "";
-        this.$store.state.paths_size.push({
+        // this.$store.state.paths_size.push({
+        dis.path_size.push({
           width: cur_size.width,
           height: cur_size.height,
         });
-        this.$store.state.img_type.push(this.judgeImgType(it, cur_size));
+        dis.img_type.push(this.judgeImgType(it, cur_size));
+        // this.$store.state.img_type.push(this.judgeImgType(it, cur_size));
       });
       // this.dis = dis;
-      this.$store.state.img_preview = dis;
-      this.$store.state.img_ready = true;
+      this.$store.state.img_preview.push(dis);
     },
     filterSepSvgs(d_list, img_width, img_height) {
       let fil_ds = [];
@@ -287,9 +331,7 @@ export default {
           this.$refs.svgSize.innerHTML = `<svg><path d="${out}"></path></svg>`;
           const out_size =
             this.$refs.svgSize.childNodes[0].childNodes[0].getBoundingClientRect();
-          this.$refs.svgSize.innerHTML = `<svg><path d="${
-            out + it
-          }"></path></svg>`;
+          this.$refs.svgSize.innerHTML = `<svg><path d="${out + it}"></path></svg>`;
           const tog_size =
             this.$refs.svgSize.childNodes[0].childNodes[0].getBoundingClientRect();
           this.$refs.svgSize.innerHTML = "";
@@ -326,8 +368,8 @@ ul {
 
 ul > li {
   overflow: hidden;
-  background-color: #fff;
-  border: 1px solid #c0ccda;
+  background-color: #f4f5dc;
+  border: 2px solid #e4ae40;
   border-radius: 6px;
   box-sizing: border-box;
   margin: 0 8px 8px 0;

@@ -1,15 +1,15 @@
-Item,cheese,bacon,Calories
-Big Mac,0,0,530
-Quarter Pounder with Cheese,1,1,520
-Quarter Pounder with Bacon & Cheese,0,2,600
-Quarter Pounder with Bacon Habanero Ranch,0,2,610
-Quarter Pounder Deluxe,0,1,540
-Double Quarter Pounder with Cheese,2,1,750
-Hamburger,0,1,240
-Cheeseburger,1,1,290
-Double Cheeseburger,2,1,430
-Bacon Clubhouse Burger,0,1,720
-McDouble,0,1,380
-Bacon McDouble,0,2,440
-Daily Double,0,1,430
-McRib,0,1,500
+Item,cheese,bacon,Calories,Serving Size,Total Fat,Saturated Fat,Trans Fat,Cholesterol,Sodium,Carbohydrates,Dietary Fiber,Sugars,Protein,Vitamin A,Vitamin C ,Calcium,Iron
+Big Mac,0,0,530,7.4,27,10,1,85,960,47,3,9,24,6%,2%,25%,25%
+Quarter Pounder with Cheese,1,1,520,7.1,26,12,1.5,95,1100,41,3,10,30,10%,2%,30%,25%
+Quarter Pounder with Bacon & Cheese,0,2,600,8,29,13,1.5,105,1440,48,3,12,37,6%,15%,25%,30%
+Quarter Pounder with Bacon Habanero Ranch,0,2,610,8.3,31,13,1.5,105,1180,46,3,10,37,8%,20%,25%,30%
+Quarter Pounder Deluxe,0,1,540,8.6,27,11,1.5,85,960,45,3,9,29,10%,8%,25%,30%
+Double Quarter Pounder with Cheese,2,1,750,10,43,19,2.5,160,1280,42,3,10,48,10%,2%,30%,35%
+Hamburger,0,1,240,3.5,8,3,0,30,480,32,1,6,12,2%,2%,10%,15%
+Cheeseburger,1,1,290,4,11,5,0.5,45,680,33,2,7,15,6%,2%,20%,15%
+Double Cheeseburger,2,1,430,5.7,21,10,1,90,1040,35,2,7,24,10%,2%,30%,20%
+Bacon Clubhouse Burger,0,1,720,9.5,40,15,1.5,115,1470,51,4,14,39,8%,25%,30%,25%
+McDouble,0,1,380,5.2,17,8,1,75,840,34,2,7,22,6%,2%,20%,20%
+Bacon McDouble,0,2,440,5.7,22,10,1,90,1110,35,2,7,27,6%,10%,20%,20%
+Daily Double,0,1,430,6.7,22,9,1,80,760,34,2,7,22,8%,8%,20%,20%
+McRib,0,1,500,7.3,26,10,0,70,980,44,3,11,22,2%,2%,15%,20%

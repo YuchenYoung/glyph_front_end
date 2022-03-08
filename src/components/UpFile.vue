@@ -24,6 +24,7 @@
         style="width: 100%"
         :header-cell-style="{ background: '#ffe3b1', color: '#dd9f20' }"
         :row-style="tableRowStyle"
+        @header-click="columnSelect"
       >
         <el-table-column
           v-for="it in props"
@@ -52,6 +53,7 @@ export default {
       // table_data: false,
       // props: [],
       data_type: [],
+      selected_props: []
     };
   },
   computed: {
@@ -117,6 +119,7 @@ export default {
         }
         const props = Object.keys(tmp_data[0]);
         this.$store.state.props = props;
+        this.selected_props = [];
         // console.log(props);
         // props.forEach((it) => {
         //   this.$store.state.data_type[it] = this.judgeDataType(
@@ -129,6 +132,16 @@ export default {
         // console.log(this.$store.state.data_type);
       };
       return false;
+    },
+    columnSelect(column) {
+      console.log(column);
+      if (this.selected_props.includes(column.property)) {
+        this.selected_props.splice( this.selected_props.indexOf(column.property), 1);
+        document.getElementsByClassName(column.id)[0].style.color = "#dd9f20";
+      } else {
+        this.selected_props.push(column.property);
+        document.getElementsByClassName(column.id)[0].style.color = "red";
+      }
     },
     // isDegreeData(arr) {
     //   for (let i = 0; i < arr.length; i++) {
@@ -205,6 +218,8 @@ export default {
       // this.$store.state.data_range = {};
     },
     generate() {
+      console.log(this.selected_props);
+      this.$store.state.selected_props = this.selected_props;
       this.$store.dispatch('generate', this);
     }
   },
@@ -239,11 +254,6 @@ export default {
   height: 50px;
   margin-top: 29px;
   font-size: 20px;
-}
-
-#btn-ge {
-  // background-color: #e4ae40;
-  // border: #e4ae40 solid ;
 }
 
 #btn-re {

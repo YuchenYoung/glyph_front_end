@@ -1,6 +1,6 @@
 <template>
-  <div ref="mainGraph" style="width: 96%; margin-left: 2%">
-    <svg v-show="vis_display" id="mainsvg" class="svgs" style="border: 3px solid #e4ae40; background: white"></svg>
+  <div :id="div_id" ref="mainGraph" style="width: 92%; margin-left: 4%; border: 3px solid #e4ae40; background: white">
+    <svg v-show="vis_display" :id="svg_id" class="svgs" style="background: white"></svg>
   </div>
 </template>
 
@@ -19,6 +19,8 @@ export default {
       mapper: {},
       dis_map: false,
       img_obj: {},
+      div_id: 'graphDiv',
+      svg_id: 'mainsvg',
       // data_size: 0,
     };
   },
@@ -28,11 +30,15 @@ export default {
     console.log('~~~~~~---~~~~~~~');
     console.log(this.best);
     if (this.best) {
-      this.img_obj = this.$store.state.best_img;
+      this.img_obj = this.$store.state.selected_img;
     } else {
       this.img_obj = this.obj;
+      this.div_id = `graphDiv${this.obj.index}`
+      this.svg_id = `mainsvg${this.obj.index}`
     }
-    this.generateGraph()
+    this.$nextTick(() => {
+      this.generateGraph();
+    })
   },
   methods: {
     checkData() {
@@ -63,7 +69,7 @@ export default {
       return "none";
     },
     dataRangeMapping(data, prop, min_val, max_val) {
-      console.log(this.$store.state)
+      // console.log(this.$store.state)
       const data_max = this.$store.state.data_range[prop].max;
       const data_min = this.$store.state.data_range[prop].min;
       return min_val + (max_val - min_val) * (data - data_min) / (data_max - data_min);
@@ -112,18 +118,23 @@ export default {
       
       this.vis_display = true;
       const graph_width = this.$refs.mainGraph.getBoundingClientRect().width;
+      // const graph_width = document.getElementById(this.div_id).getBoundingClientRect().width;
       const _this = this;
       const encoding = p_encoding;
-      const vis_svg = d3.select("#mainsvg");
-      vis_svg.attr("width", graph_width * 0.95).attr("height", graph_width * 0.55);
-      const vis_width = +vis_svg.attr("width");
+      // const vis_svg = d3.select("#mainsvg");
+      const vis_svg = d3.select(`#${this.svg_id}`);
+      console.log(vis_svg);
+      vis_svg.attr("width", graph_width * 0.90).attr("height", graph_width * 0.50);
+      vis_svg.attr("viewBox", "0 0 1500 750")
+      // const vis_width = +vis_svg.attr("width");
       // const vis_height = +vis_svg.attr("height");
+      const vis_width = 1500;
+      // const vis_height = 750;
       const margin = { top: 50, right: 100, bottom: 50, left: 100 };
       const inner_width = vis_width - margin.left - margin.right;
       // const inner_height = vis_height - margin.top - margin.bottom;
       const g = vis_svg
         .append("g")
-        .attr("id", "maingroup")
         .attr("transform", `translate(${margin.left}, ${margin.top})`)
 
       let stran = {tx: 0, ty: 0};
@@ -177,7 +188,7 @@ export default {
       }
 
       const render_number = (base, d, size, num) => {
-        console.log(num);
+        // console.log(num);
         const sw = size.height;
         for (let k = 0; k < num; k++) {
           const trany = stran.ty + k * sw;
@@ -219,7 +230,7 @@ export default {
           stran.tx = 0;
           stran.ty = 0; 
           let pos = encoding.findIndex(d => d.element == i);
-          console.log(encoding);
+          // console.log(encoding);
           let encoding_type = encoding[pos]['encoding'];
           if (encoding_type == 'none') {
             render_simple(glyph, ds[i],path_size[i]);

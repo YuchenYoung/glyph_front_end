@@ -3,34 +3,53 @@
     <p class="title">Metaphoric Image Gallery</p>
     <el-button v-if="false" @click="testData">Test Data</el-button>
     <div id="svgMeasure" ref="svgSize"></div>
-    <div style="max-height: 450px; overflow-y: scroll; padding-left: 3%;">
+    <div v-if="!dataReady" style="margin-left: 20px">
+      <el-upload
+        class="upload-demo"
+        drag
+        :limit="1"
+        action=""
+        accept=".jpg, .png"
+        :before-upload="readImgFile"
+        style="margin-top: 20px"
+      >
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">Click or drag the file here to upload</div>
+      </el-upload>
+    </div>
+    <div style="max-height: 450px; overflow-y: scroll; padding-left: 3%">
       <div v-for="(obj, index) in previewElements" :key="index">
         <div style="display: inline-flex">
           <p>Image {{ index }}</p>
-          <el-button size="mini" style="height: 50%; margin-top: 12px; margin-left: 16px;"
-          @click="setObjVis($event,index)">Vis</el-button>
+          <el-button
+            size="mini"
+            style="height: 50%; margin-top: 12px; margin-left: 16px"
+            @click="setObjVis($event, index)"
+            >Vis</el-button
+          >
         </div>
         <ul>
-          <li v-for="it in obj.eles" :key="it" v-html="it" :style="obj.style"></li>
+          <li
+            v-for="it in obj.eles"
+            :key="it"
+            v-html="it"
+            :style="obj.style"
+          ></li>
         </ul>
-        <graph v-if="obj.vis" :best="false" :obj="obj"></graph>
+        <graph
+          v-if="obj.vis"
+          :best="false"
+          :obj="obj"
+          style="width: 400px"
+        ></graph>
         <p>{{ obj.info }}</p>
       </div>
     </div>
-
-    <ul v-show="false">
-      <li
-        v-for="it in previewElements"
-        :key="it"
-        v-html="it"
-        :style="previewStyle"
-      ></li>
-    </ul>
   </div>
 </template>
 
 <script>
-import Graph from './vis/Graph.vue';
+import Graph from "./vis/Graph.vue";
 export default {
   components: { Graph },
   name: "UpImage",
@@ -45,7 +64,6 @@ export default {
         height: "0",
       },
       all_svgs: [],
-      sep_objs: [],
       dis: {},
       search_num: 0,
       deal_num: 0,
@@ -55,6 +73,9 @@ export default {
     };
   },
   computed: {
+    dataReady() {
+      return this.$store.state.data_ready;
+    },
     imgReady() {
       return this.$store.state.img_ready;
     },
@@ -69,7 +90,7 @@ export default {
     deal_num(val) {
       console.log(`${val} ${this.search_num}`);
       if (val > 0) {
-        const cur_time = new Date().getTime()
+        const cur_time = new Date().getTime();
         this.deal_time.push((cur_time - this.last_time) / 1000);
         this.last_time = cur_time;
       }
@@ -79,6 +100,9 @@ export default {
     },
   },
   created() {
+    if (!this.$store.state.data_ready) {
+      return;
+    }
     console.log("now image created");
     console.log(this.$store);
     if (this.$store.state.img_ready == false) {
@@ -114,17 +138,10 @@ export default {
         console.log(img_urls);
         this.loadImgs(img_urls);
       });
-      // let img_urls = [
-      //   'https://img1.baidu.com/it/u=3988299520,1364854370&fm=253&fmt=auto&app=138&f=JPEG?w=450&h=468',
-      //   'https://cdn3.iconfinder.com/data/icons/food-and-drink-55/50/burger-13-2-512.png',
-      //   'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQX9DMqAGXnvFSDHs_Qd-d2Xl2qcwrHo8gbA&usqp=CAU',
-      //   'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTh4kVYP6xekBhOtr4e_xzvHT9vUxz6U7oRCw&usqp=CAU',
-      // ];
-      // this.viewImg('https://img0.baidu.com/it/u=92751486,4059642266&fm=253&fmt=auto&app=138&f=PNG?w=500&h=490');
-      // this.viewImg('https://img1.baidu.com/it/u=3988299520,1364854370&fm=253&fmt=auto&app=138&f=JPEG?w=450&h=468');
     },
     simpleImg() {
       let img_urls = [
+        "https://img0.baidu.com/it/u=92751486,4059642266&fm=253&fmt=auto&app=138&f=PNG?w=500&h=490",
         "https://img1.baidu.com/it/u=3988299520,1364854370&fm=253&fmt=auto&app=138&f=JPEG?w=450&h=468",
       ];
       this.loadImgs(img_urls);
@@ -145,8 +162,7 @@ export default {
         try {
           potrace.trace(it, function (err, svg) {
             if (err) {
-              // _this.deal_num++;
-              console.log(`A== ${_this.deal_num}`);
+              console.log(`ptrace error`);
               throw err;
             }
             // let res_svg = trace.getSVG();
@@ -154,20 +170,49 @@ export default {
             let obj = _this.segmentSvg(svg.toString());
             console.log(obj);
             if (obj.svgs.length >= 4 && obj.svgs.length <= 9) {
-              _this.sep_objs.push(obj);
               _this.uploadSegmentation(obj);
-              // _this.up_data.svgsList.push(obj.svgs);
               _this.all_svgs.push(obj.svgs);
+              _this.getImgPixelColor(it, _this.deal_num);
               _this.deal_num++;
-              console.log(`B== ${_this.deal_num}`);
+              console.log(`B == ${_this.deal_num}`);
             }
-            // _this.deal_num++;
-            // console.log(`B== ${_this.deal_num}`);
           });
         } catch (err) {
-          console.log("A=err");
+          console.log("potrace err");
         }
       });
+    },
+    getImgPixelColor(url, index) {
+      const d_size = this.$store.state.img_preview[index].path_size;
+      this.$store.state.img_preview[index].colors = [];
+      const Jimp = require("jimp");
+      Jimp.read(url, (err, image) => {
+        if (err) {
+          console.log(err);
+          for (let i = 0; i < d_size.length; i++) {
+            this.$store.state.img_preview[index].colors.push("#00000000");
+          }
+          return;
+        }
+        // console.log(image);
+        for (let i = 0; i < d_size.length; i++) {
+          const cur_x = Math.max(0, parseInt((d_size[i].right - d_size[i].left) / 2));
+          const cur_y = Math.max(0, parseInt((d_size[i].bottom - d_size[i].top) / 2));
+          let color = image.getPixelColor(cur_x, cur_y).toString(16);
+          color = ('00000000' + color).slice(-8);
+          // console.log(color);
+          this.$store.state.img_preview[index].colors.push("#" + color);
+        }
+      });
+    },
+    updateDisElements(idx) {
+      console.log('~~~~~~~~~~~-----------~~~~~~~~~~~~~');
+      console.log(this.$store.state.img_preview[idx]);
+      const obj = this.$store.state.img_preview[idx];
+      for (let i = 1; i < obj.eles.length; i++) {
+        this.$store.state.img_preview[idx].eles[i] = 
+        `<svg width="${obj.width}" height="${obj.height}" viewBox="0 0 ${obj.ori_size.width} ${obj.ori_size.height}"><path d="${obj.d_list[i]}" fill="${obj.colors[i]}"></path></svg>`
+      }
     },
     viewImg(src) {
       const _this = this;
@@ -183,12 +228,12 @@ export default {
     mapPartData(pos, num, best_img, best_score, best_map) {
       console.log(`map part ${pos} ${num} ${best_img}`);
       if (pos >= num) {
-        // this.uploadSegmentation(this.sep_objs[best_img]);
         this.$store.state.mapper = best_map;
         const obj = this.$store.state.img_preview[best_img];
-        this.$store.state.best_img = obj;
+        this.$store.state.selected_img = obj;
         this.$store.state.img_ready = true;
-        this.$message({message: 'Image Ready', type: 'success'});
+        this.$message({ message: "Image Ready", type: "success" });
+        this.$router.push({ path: "/index/vis" });
         // this.$store.state.best_img = {
         //   path_size: obj.path_size,
         //   img_type: obj.img_type,
@@ -214,12 +259,17 @@ export default {
       }).then((res) => {
         console.log("~~~~~~~~~~~~~~~~~~~");
         console.log(res.data);
-        for (let i = 0; i < 2; i++) {
+        const cur_len = res.data.scores.length;
+        for (let i = 0; i < cur_len; i++) {
           if (pos + i >= num) break;
+          this.$store.state.img_preview[pos + i].index = pos + i;
           this.$store.state.img_preview[pos + i].mapper = res.data.mappers[i];
           this.$store.state.img_preview[pos + i].score = res.data.scores[i];
           this.$store.state.img_preview[pos + i].times = res.data.times[i].concat([this.deal_time[pos + i]]);
-          this.$store.state.img_preview[pos + i].info = this.$store.state.img_preview[pos + i].times.join("--");
+          this.$store.state.img_preview[pos + i].info =
+            this.$store.state.img_preview[pos + i].times.join("--");
+          // display image' color
+          // this.updateDisElements(pos + i);
         }
         if (res.data.score > best_score) {
           best_score = res.data.score;
@@ -227,7 +277,7 @@ export default {
           best_map = res.data.mapper;
         }
         this.mapPartData(
-          pos + 2,
+          pos + cur_len,
           this.all_svgs.length,
           best_img,
           best_score,
@@ -239,8 +289,16 @@ export default {
       console.log("===================");
       this.mapPartData(0, this.all_svgs.length, -1, -1, []);
     },
+    getPathSize(d) {
+      this.$refs.svgSize.innerHTML = `<svg><path d="${d}"></path></svg>`;
+      const d_size =
+        this.$refs.svgSize.childNodes[0].childNodes[0].getBoundingClientRect();
+      this.$refs.svgSize.innerHTML = "";
+      return d_size;
+    },
     segmentSvg(src) {
       let retval = { svgs: [], ds: [] };
+      console.log(src);
       let mid_st_str = `<path d="`;
       let mid_start = src.indexOf(mid_st_str) + mid_st_str.length;
       let head = src.substring(0, mid_start);
@@ -254,7 +312,21 @@ export default {
       mid.split("M").forEach((it) => {
         ori_ds.push("M" + it);
       });
-      const filter_ds = this.filterSepSvgs(ori_ds, retval.width, retval.height);
+      // const filter_ds = ori_ds;
+      let filter_ds = this.filterSepSvgs(ori_ds, retval.width, retval.height, true);
+      const radial = this.judgeRadial(filter_ds, retval.width, retval.height);
+      if (!radial) {
+        filter_ds = this.filterSepSvgs(ori_ds, retval.width, retval.height, false);
+      }
+      let cent_x = [],
+        cent_y = [];
+      for (let i = 0; i < filter_ds.length; i++) {
+        const d_size = this.getPathSize(filter_ds[i]);
+        cent_x.push((d_size.right - d_size.left) / 2);
+        cent_y.push((d_size.bottom - d_size.top) / 2);
+      }
+      console.log(radial ? "radial" : "non-radial");
+      // console.log(filter_ds.length);
       retval.svgs.push(head + filter_ds.join(" ") + tail);
       retval.ds.push(filter_ds.join(" "));
       filter_ds.forEach((it) => {
@@ -264,22 +336,22 @@ export default {
       return retval;
     },
     uploadSegmentation(obj) {
-      let dis = { 
-        eles: [], 
-        style: {}, 
+      let dis = {
+        eles: [],
+        style: {},
         ori_size: {},
         d_list: [],
         img_type: [],
         path_size: [],
         info: "",
-        vis: false
+        vis: false,
       };
       // this.$store.state.svg_width = obj.width;
       // this.$store.state.svg_height = obj.height;
       dis.ori_size = {
         width: obj.width,
-        height: obj.height
-      }
+        height: obj.height,
+      };
       dis.width = 100;
       const scale = dis.width / obj.width;
       dis.height = scale * obj.height;
@@ -287,64 +359,98 @@ export default {
         width: dis.width + "px",
         height: dis.height + "px",
       };
-      const tranx = obj.width * 0.5 * (scale - 1);
-      const trany = obj.height * 0.5 * (scale - 1);
+      //const tranx = obj.width * 0.5 * (scale - 1);
+      //const trany = obj.height * 0.5 * (scale - 1);
       this.svg_list = obj.svgs;
       this.$store.state.svg_list = obj.svgs;
       // this.$store.state.d_list = obj.ds;
       dis.d_list = obj.ds;
       obj.ds.forEach((it) => {
+        // dis.eles.push(`<svg width="${obj.width}" height="${obj.height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="${it}"></path></svg>`);
         dis.eles.push(
-          `<svg width="${obj.width}" height="${obj.height}" transform="translate(${tranx},${trany}),scale(${scale},${scale})"><path d="${it}"></path></svg>`
+          `<svg width="${dis.width}" height="${dis.height}" viewBox="0 0 ${obj.width} ${obj.height}"><path d="${it}"></path></svg>`
         );
-        this.$refs.svgSize.innerHTML = `<svg><path d="${it}"></path></svg>`;
-        const cur_size =
-          this.$refs.svgSize.childNodes[0].childNodes[0].getBoundingClientRect();
-        this.$refs.svgSize.innerHTML = "";
-        // this.$store.state.paths_size.push({
-        dis.path_size.push({
-          width: cur_size.width,
-          height: cur_size.height,
-        });
+        const cur_size = this.getPathSize(it);
+        dis.path_size.push(cur_size);
         dis.img_type.push(this.judgeImgType(it, cur_size));
         // this.$store.state.img_type.push(this.judgeImgType(it, cur_size));
       });
       // this.dis = dis;
       this.$store.state.img_preview.push(dis);
     },
-    filterSepSvgs(d_list, img_width, img_height) {
-      let fil_ds = [];
-      d_list.forEach((it) => {
-        this.$refs.svgSize.innerHTML = `<svg><path d="${it}"></path></svg>`;
-        const cur_size =
-          this.$refs.svgSize.childNodes[0].childNodes[0].getBoundingClientRect();
-        this.$refs.svgSize.innerHTML = "";
+    filterSepSvgs(d_list, img_width, img_height, consider_radial) {
+      // console.log(`${img_width} ${img_height}`);
+      let i = d_list.length - 1;
+      //let back = d_list.length - 1;
+      while (i >= 0) {
+        // console.log(d_list);
+        const cur_size = this.getPathSize(d_list[i]);
+        let mid_x = (cur_size.left + cur_size.right) / 2;
+        let mid_y = (cur_size.top + cur_size.bottom) / 2;
         if (
-          cur_size.width / img_width < 0.05 &&
-          cur_size.height / img_height < 0.05
+          cur_size.width / img_width <= 0.02 ||
+          cur_size.height / img_height <= 0.02 ||
+          (cur_size.width / img_width < 0.05 &&
+            cur_size.height / img_height < 0.05)
         ) {
-          return;
+          d_list.splice(i, 1);
+          i--; //back--;
+          continue;
         }
-        let judge = true;
-        d_list.forEach((out) => {
-          if (!judge || it == out) return;
-          this.$refs.svgSize.innerHTML = `<svg><path d="${out}"></path></svg>`;
-          const out_size =
-            this.$refs.svgSize.childNodes[0].childNodes[0].getBoundingClientRect();
-          this.$refs.svgSize.innerHTML = `<svg><path d="${out + it}"></path></svg>`;
-          const tog_size =
-            this.$refs.svgSize.childNodes[0].childNodes[0].getBoundingClientRect();
-          this.$refs.svgSize.innerHTML = "";
+        for (let j = i - 1; j >= 0; j--) {
+          // if (i == j) continue;
+          let it = d_list[i];
+          let out = d_list[j];
+          const out_size = this.getPathSize(out);
+          const tog_size = this.getPathSize(out + it);
+          // console.log(`${out_size.height - tog_size.height} ${out_size.width - tog_size.width}`)
           if (
             Math.abs(out_size.height - tog_size.height) <= 1e-6 &&
             Math.abs(out_size.width - tog_size.width) <= 1e-6
           ) {
-            judge = false;
+            let out_mid_x = (out_size.left + out_size.right) / 2;
+            let out_mid_y = (out_size.top + out_size.bottom) / 2;
+            if (
+              !consider_radial ||
+              Math.abs(out_mid_x - mid_x) / img_width >= 0.04 ||
+              Math.abs(out_mid_y - mid_y) / img_height >= 0.04
+            ) {
+              d_list[j] += d_list[i];
+              d_list.splice(i, 1); //back--;
+              break;
+            }
           }
-        });
-        if (judge) fil_ds.push(it);
-      });
-      return fil_ds;
+        }
+        i--;
+      }
+      return d_list;
+    },
+    judgeRadial(d_list, img_w, img_h) {
+      let centers = [];
+      let max_center = 1;
+      for (let i = 0; i < d_list.length; i++) {
+        const i_size = this.getPathSize(d_list[i]);
+        const mid_x = (i_size.left + i_size.right) / 2;
+        const mid_y = (i_size.top + i_size.bottom) / 2;
+        let overlap = false;
+        for (let j = 0; j < centers.length; j++) {
+          if (
+            Math.abs(mid_x - centers[j].x) / img_w <= 0.04 &&
+            Math.abs(mid_y - centers[j].y) / img_h <= 0.04
+          ) {
+            centers[j].cnt++;
+            if (centers[j].cnt > max_center) {
+              max_center = centers[j].cnt;
+            }
+            overlap = true;
+            break;
+          }
+        }
+        if (!overlap) {
+          centers.push({ x: mid_x, y: mid_y, cnt: 1 });
+        }
+      }
+      return max_center / centers.length > 0.6;
     },
     judgeImgType(d, size) {
       if (size.width / size.height >= 3.5) {

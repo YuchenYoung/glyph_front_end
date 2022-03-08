@@ -13,6 +13,7 @@ export default new Vuex.Store({
     data_range: {},
     data_ready: false,
     props: [],
+    selected_props: [],
     theme: "",
 
     //img view
@@ -25,7 +26,7 @@ export default new Vuex.Store({
     img_preview: [],
     img_ready: false,
     mapper: {},
-    best_img: {}
+    selected_img: {}
   },
   mutations: {
 
@@ -316,6 +317,7 @@ export default new Vuex.Store({
       this.state.data_ready = false;
       this.state.data = [];
       this.state.props = [];
+      this.state.selected_props = [];
       this.state.data_type = {};
       this.state.data_range = {};
     },

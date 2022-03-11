@@ -141,6 +141,7 @@ export default {
       let pos_x = 0, pos_y = 0, next_y = 0;
       const data = this.$store.state.data;
       const ds = this.img_obj.d_list;
+      const fills = this.img_obj.fill;
       let img_width = this.img_obj.ori_size.width;
       let img_height = this.img_obj.ori_size.height;
 
@@ -177,28 +178,28 @@ export default {
         base.append("path").attr("d", d).attr('fill', color).attr("transform", `translate(${stran.tx}, ${stran.ty})`);
       }
 
-      const render_size = (base, d, size, scale) => {
-        base.append("path").attr("d", d).attr("transform", `translate(${stran.tx}, ${stran.ty}),scale(${scale}, ${scale})`);
+      const render_size = (base, d, size, fill, scale) => {
+        base.append("path").attr("d", d).attr('fill', fill).attr("transform", `translate(${stran.tx}, ${stran.ty}),scale(${scale}, ${scale})`);
         stran.tx += (scale - 1) * 0.5 * size.width;
         stran.ty += (scale - 1) * 0.5 * size.height;
       };
 
-      const render_length = (base, d, size, length) => {
-        render_size(base, d, size, {x: length, y: 1});
+      const render_length = (base, d, size, fill, length) => {
+        render_size(base, d, size, fill, {x: length, y: 1});
       }
 
-      const render_number = (base, d, size, num) => {
+      const render_number = (base, d, size, fill, num) => {
         // console.log(num);
         const sw = size.height;
         for (let k = 0; k < num; k++) {
           const trany = stran.ty + k * sw;
-          base.append("path").attr("d", d).attr("transform", `translate(${stran.tx}, ${trany})`);
+          base.append("path").attr("d", d).attr('fill', fill).attr("transform", `translate(${stran.tx}, ${trany})`);
         }
         stran.ty += (num - 1) * sw;
       };
 
-      const render_simple = (base, d, size) => {
-        render_number(base, d, size, 1);
+      const render_simple = (base, d, size, fill) => {
+        render_number(base, d, size, fill, 1);
       };
 
       const render_glyph_transform = (glyph, width) => {
@@ -233,15 +234,15 @@ export default {
           // console.log(encoding);
           let encoding_type = encoding[pos]['encoding'];
           if (encoding_type == 'none') {
-            render_simple(glyph, ds[i],path_size[i]);
+            render_simple(glyph, ds[i], path_size[i], fills[i]);
           } else if (encoding_type == "number") {
-            render_number(glyph, ds[i], path_size[i], data[encoding[pos]["prop"]]);
+            render_number(glyph, ds[i], path_size[i], fills[i], data[encoding[pos]["prop"]]);
           } else if (encoding_type == "size") {
             const mapped_value = this.dataRangeMapping(data[encoding[pos]["prop"]], encoding[pos]["prop"], 0.5, 2);
-            render_size(glyph, ds[i], path_size[i], mapped_value);
+            render_size(glyph, ds[i], path_size[i], fills[i], mapped_value);
           } else if (encoding_type == "length") {
             const mapped_value = this.dataRangeMapping(data[encoding[pos]["prop"]], encoding[pos]["prop"], 0.5, 2);
-            render_length(glyph, ds[i], path_size[i], mapped_value);
+            render_length(glyph, ds[i], path_size[i], fills[i], mapped_value);
           } else if (encoding_type == "color") {
             const mapped_value = parseInt(this.dataRangeMapping(data[encoding[pos]["prop"]], encoding[pos]["prop"], 0, 255));
             render_color(glyph, ds[i], `rgb(${mapped_value}, 0, 0)`);

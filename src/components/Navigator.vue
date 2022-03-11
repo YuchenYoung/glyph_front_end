@@ -41,6 +41,7 @@ export default {};
   padding-left: 20px;
   background-color: white;
   width: 90%;
+  height: 62px;
   margin-left: 5%;
   margin-top: 10px;
   margin-bottom: 10px;

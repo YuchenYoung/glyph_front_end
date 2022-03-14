@@ -13,7 +13,7 @@ export default new Vuex.Store({
     data_range: {},
     data_ready: false,
     props: [],
-    selected_props: [],
+    group_props: [],
     theme: "",
 
     //img view
@@ -115,7 +115,8 @@ export default new Vuex.Store({
 
     generate(state, view) {
       this.dispatch("dataProcess");
-      console.log(view);
+      // console.log(state);
+      // console.log(view);
       view.$router.push({path: '/index/image'});
     },
     resetData() {

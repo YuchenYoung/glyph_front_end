@@ -20,11 +20,10 @@
       <el-table
         :data="tableData"
         border
-        height="400px"
+        height="350px"
         style="width: 100%"
         :header-cell-style="{ background: '#ffe3b1', color: '#dd9f20' }"
         :row-style="tableRowStyle"
-        @header-click="columnSelect"
       >
         <el-table-column
           v-for="it in props"
@@ -33,15 +32,27 @@
           :label="it"
         ></el-table-column>
       </el-table>
-      <el-button type="warning" id="btn-ge" @click="generate">Generate</el-button>
-      <el-button type="warning" plain id="btn-re" @click="resetData">Re-upload</el-button>
+      <div style="margin-top: 16px; text-align: left">
+        <el-select v-for="(it, idx) in groups" :key="idx" v-model="groups[idx]" 
+          multiple placeholder="Select Props" style="margin-right: 16px; width: 320px;">
+          <el-option
+            v-for="(item, index) in noGroupProps(idx)"
+            :key="index"
+            :label="item"
+            :value="item"
+          >
+          </el-option>
+        </el-select>
+        <el-button @click="addGroup">Add Group</el-button>
+      </div>
+      <el-button type="warning" class="btn-options" id="btn-ge" @click="generate">Generate</el-button>
+      <el-button type="warning" class="btn-options" plain id="btn-re" @click="resetData">Re-upload</el-button>
     </div>
     <div ref="svgSize"></div>
   </div>
 </template>
 
 <script>
-// import xlsx from "xlsx";
 export default {
   name: "UpFile",
   props: {},
@@ -49,11 +60,9 @@ export default {
     return {
       table_display: false,
       upload_display: true,
-      // data_ready: [],
-      // table_data: false,
-      // props: [],
       data_type: [],
-      selected_props: []
+      groups: [],
+      selected_props: [],
     };
   },
   computed: {
@@ -66,6 +75,22 @@ export default {
     props() {
       return this.$store.state.props;
     },
+    noGroupProps() {
+      return (idx) => {
+        let used_props = [];
+        for (let i = 0; i < this.groups.length; i++) {
+          if (i == idx) continue;
+          used_props = used_props.concat(this.groups[i]);
+        }
+        let all_props = JSON.parse(JSON.stringify(this.$store.state.props));
+        for (let i = all_props.length - 1; i >= 0; i--) {
+          if (used_props.includes(all_props[i])) {
+            all_props.splice(i, 1);
+          }
+        }
+        return all_props;
+      }
+    }
   },
   created() {
     console.log(this.$store.state);
@@ -74,15 +99,10 @@ export default {
   },
   methods: {
     tableRowStyle(row) {
-      // console.log(row)
       if (row.rowIndex % 2) {
-        return {
-          "background-color": "#fff6ec",
-        };
+        return { "background-color": "#fff6ec" };
       } else {
-        return {
-          "background-color": "#ffffff",
-        };
+        return { "background-color": "#ffffff" };
       }
     },
     testData() {
@@ -108,9 +128,6 @@ export default {
         });
         const outdata = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
         let tmp_data = [...outdata];
-        // _this.table_display = true;
-        // _this.upload_display = false;
-        // _this.table_data = tmp_data;
         console.log(tmp_data);
         _this.$store.state.data_ready = true;
         _this.$store.state.data = tmp_data;
@@ -120,108 +137,25 @@ export default {
         const props = Object.keys(tmp_data[0]);
         this.$store.state.props = props;
         this.selected_props = [];
-        // console.log(props);
-        // props.forEach((it) => {
-        //   this.$store.state.data_type[it] = this.judgeDataType(
-        //     tmp_data.map((d) => d[it])
-        //   );
-        //   this.$store.state.data_range[it] = this.getDataRange(
-        //     tmp_data.map((d) => d[it])
-        //   );
-        // });
-        // console.log(this.$store.state.data_type);
       };
       return false;
     },
-    columnSelect(column) {
-      console.log(column);
-      if (this.selected_props.includes(column.property)) {
-        this.selected_props.splice( this.selected_props.indexOf(column.property), 1);
-        document.getElementsByClassName(column.id)[0].style.color = "#dd9f20";
-      } else {
-        this.selected_props.push(column.property);
-        document.getElementsByClassName(column.id)[0].style.color = "red";
-      }
+    addGroup() {
+      this.groups.push([]);
     },
-    // isDegreeData(arr) {
-    //   for (let i = 0; i < arr.length; i++) {
-    //     if (arr[i] > 1 || arr[i] < 0) {
-    //       return false;
-    //     }
-    //   }
-    //   return true;
-    // },
-    // isInteger(arr) {
-    //   for (let i = 0; i < arr.length; i++) {
-    //     if (arr[i] % 1 !== 0) {
-    //       return false;
-    //     }
-    //   }
-    //   return true;
-    // },
-    // isDataInSmallRange(arr) {
-    //   for (let i = 0; i < arr.length; i++) {
-    //     if (arr[i] > 5 || arr[i] < 0) {
-    //       return false;
-    //     }
-    //   }
-    //   return true;
-    // },
-    // isCategorical(arr) {
-    //   const key_set = new Set();
-    //   arr.forEach((it) => {
-    //     if (key_set.size > 7) {
-    //       return false;
-    //     }
-    //     if (!key_set.has(it)) {
-    //       key_set.add(it);
-    //     }
-    //   });
-    //   return key_set.size <= 7;
-    // },
-    // getDataRange(arr) {
-    //   if (typeof arr[0] != typeof 0) {
-    //     return { min: "", max: "" };
-    //   }
-    //   return {
-    //     min: Math.min.apply(null, arr),
-    //     max: Math.max.apply(null, arr),
-    //   };
-    // },
-    // judgeDataType(arr) {
-    //   const value_type = typeof arr[0];
-    //   if (value_type == typeof 0) {
-    //     if (this.isInteger(arr)) {
-    //       if (this.isDataInSmallRange(arr)) {
-    //         return "small_range";
-    //       }
-    //     } else {
-    //       if (this.isDegreeData(arr)) {
-    //         return "degree";
-    //       }
-    //     }
-    //     return "number";
-    //   } else if (value_type == typeof "") {
-    //     if (this.isCategorical(arr)) {
-    //       return "category";
-    //     } else {
-    //       return "string";
-    //     }
-    //   }
-    // },
     resetData() {
-      this.$store.dispatch('resetData');
-      // this.$store.state.data_ready = false;
-      // this.$store.state.data = [];
-      // this.$store.state.props = [];
-      // this.$store.state.data_type = {};
-      // this.$store.state.data_range = {};
+      this.groups = [];
+      this.$store.dispatch("resetData");
     },
     generate() {
-      console.log(this.selected_props);
-      this.$store.state.selected_props = this.selected_props;
-      this.$store.dispatch('generate', this);
-    }
+      console.log(this.groups);
+      let group_props = [];
+      this.groups.forEach(it => {
+        if (it.length > 0) group_props.push(it);
+      });
+      this.$store.state.group_props = group_props;
+      this.$store.dispatch("generate", this);
+    },
   },
 };
 </script>
@@ -249,7 +183,7 @@ export default {
   background: #fff6ec;
 }
 
-.el-button {
+.btn-options {
   width: 180px;
   height: 50px;
   margin-top: 29px;

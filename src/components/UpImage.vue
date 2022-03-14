@@ -41,7 +41,7 @@
           v-if="obj.vis"
           :best="false"
           :obj="obj"
-          style="width: 400px"
+          style="width: 800px"
         ></graph>
         <p>{{ obj.info }}</p>
       </div>
@@ -106,8 +106,8 @@ export default {
     if (!this.$store.state.data_ready) {
       return;
     }
-    console.log("now image created");
-    console.log(this.$store);
+    //console.log("now image created");
+    //console.log(this.$store);
     if (this.$store.state.img_ready == false) {
       this.$store.state.img_preview = [];
       // this.searchImg();
@@ -117,7 +117,7 @@ export default {
   },
   methods: {
     testData() {
-      console.log(this.$refs.svgSize.clientHeight);
+      //console.log(this.$refs.svgSize.clientHeight);
     },
     setObjVis(e, index) {
       const curv = this.$store.state.img_preview[index].vis;
@@ -133,13 +133,13 @@ export default {
         },
       }).then((res) => {
         // this.$store.state.theme = this.img_content;
-        console.log(res.data);
+        //console.log(res.data);
         let img_urls = [];
         res.data.forEach((it) => {
           img_urls.push(it);
         });
         this.search_num = img_urls.length;
-        console.log(img_urls);
+        //console.log(img_urls);
         this.loadImgs(img_urls);
       });
     },
@@ -149,19 +149,19 @@ export default {
         url: "/search/svg/",
         params: {
           keyWords: this.$store.state.theme,
-          imgNum: 30,
+          imgNum: 15,
         },
       }).then((res) => {
         // this.$store.state.theme = this.img_content;
         res.data.svgs.forEach(it => {
           let obj = this.formatSvg(it);
-          console.log(obj.has_color);
+          //console.log(obj.has_color);
           if (obj.has_color && obj.svgs.length >= 4 && obj.svgs.length <= 9) {
             this.uploadSegmentation(obj);
             this.all_svgs.push(obj.svgs);
           }
         });
-        console.log(this.previewElements);
+        //console.log(this.previewElements);
         // console.log("tttttttttt");
         this.getDataMap();
       });
@@ -200,6 +200,9 @@ export default {
       } else {
         return;
       }
+      if (!this.checkDAvailable(path_obj.d)) {
+        return;
+      }
       if (keys.includes('_style')) {
         // console.log(tag);
         // console.log(obj._style);
@@ -222,6 +225,15 @@ export default {
         path_obj.stroke = 'black';
       }
       svg_obj.paths.push(path_obj);
+    },
+    checkDAvailable(d) {
+      const invalidChars = ['A', 'a', 'U', 'u']
+      for (let i = 0; i < d.length; i++) {
+        if (invalidChars.includes(d.charAt(i))) {
+          return false;
+        }
+      }
+      return true;
     },
     simpleImg() {
       let img_urls = [
@@ -252,13 +264,13 @@ export default {
             // let res_svg = trace.getSVG();
             // let obj = _this.segmentSvg(res_svg.toString());
             let obj = _this.segmentSvg(svg.toString());
-            console.log(obj);
+            //console.log(obj);
             if (obj.svgs.length >= 4 && obj.svgs.length <= 9) {
               _this.uploadSegmentation(obj);
               _this.all_svgs.push(obj.svgs);
               // _this.getImgPixelColor(it, _this.deal_num);
               _this.deal_num++;
-              console.log(`B == ${_this.deal_num}`);
+              //console.log(`B == ${_this.deal_num}`);
             }
           });
         } catch (err) {
@@ -290,8 +302,8 @@ export default {
       });
     },
     updateDisElements(idx) {
-      console.log('~~~~~~~~~~~-----------~~~~~~~~~~~~~');
-      console.log(this.$store.state.img_preview[idx]);
+      //console.log('~~~~~~~~~~~-----------~~~~~~~~~~~~~');
+      //console.log(this.$store.state.img_preview[idx]);
       const obj = this.$store.state.img_preview[idx];
       for (let i = 1; i < obj.eles.length; i++) {
         this.$store.state.img_preview[idx].eles[i] = 
@@ -330,8 +342,9 @@ export default {
         // content: this.$store.state.theme,
         content: "burger",
         dataProps: this.$store.state.props,
+        groups : this.$store.state.group_props,
         // dataProps: ['Item', 'cheese', 'bacon', 'Calories'],
-        svgsList: this.all_svgs.slice(pos, pos + 1),
+        svgsList: this.all_svgs.slice(pos, pos + 2),
       };
       this.$axios({
         method: "post",
@@ -383,7 +396,7 @@ export default {
     },
     segmentSvg(src) {
       let retval = { svgs: [], ds: [], fill: [] };
-      console.log(src);
+      //console.log(src);
       let mid_st_str = `<path d="`;
       let mid_start = src.indexOf(mid_st_str) + mid_st_str.length;
       let head = src.substring(0, mid_start);
@@ -402,7 +415,7 @@ export default {
       if (!radial) {
         filter_paths = this.filterSepSvgs(ori_paths, retval.width, retval.height, false);
       }
-      console.log(radial ? "radial" : "non-radial");
+      //console.log(radial ? "radial" : "non-radial");
       // console.log(filter_ds.length);
       const filter_ds = filter_paths.map(d => d.d);
       retval.svgs.push(head + filter_ds.join(" ") + tail);
@@ -418,7 +431,7 @@ export default {
       const xml_obj = this.$x2js.xml2js(src);
       let svg_obj = {paths: [], has_color: false};
       this.filterContent(xml_obj.svg, 'svg', svg_obj);
-      console.log(svg_obj);
+      // console.log(svg_obj);
       let retval = { svgs: [], ds: [] };
       retval.width = svg_obj.width;
       retval.height = svg_obj.height;
@@ -428,7 +441,7 @@ export default {
       if (!radial) {
         filter_paths = this.filterSepSvgs(ori_paths, retval.width, retval.height, false);
       }
-      console.log(radial ? "radial" : "non-radial");
+      // console.log(radial ? "radial" : "non-radial");
       retval.fill = [''].concat(filter_paths.map(d => d.fill));
       retval.ds = [''].concat(filter_paths.map(d => d.d));
       let ori_svg = `<svg width="${retval.width}" height="${retval.height}">`;

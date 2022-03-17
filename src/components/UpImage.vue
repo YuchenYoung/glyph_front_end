@@ -18,33 +18,35 @@
       </el-upload>
       <el-button @click="searchSvg">search svg</el-button>
     </div>
-    <div style="max-height: 450px; overflow-y: scroll; padding-left: 3%">
-      <div v-for="(obj, index) in previewElements" :key="index">
-        <div style="display: inline-flex">
-          <p>Image {{ index }}</p>
-          <el-button
-            size="mini"
-            style="height: 50%; margin-top: 12px; margin-left: 16px"
-            @click="setObjVis($event, index)"
-            >Vis</el-button
-          >
+    <div style="height: 450px; padding-left: 3%">
+      <el-scrollbar class="vertical-scroll">
+        <div v-for="(obj, index) in previewElements" :key="index">
+          <div style="display: inline-flex">
+            <p>Image {{ index }}</p>
+            <el-button
+              size="mini"
+              style="height: 50%; margin-top: 12px; margin-left: 16px"
+              @click="setObjVis($event, index)"
+              >Vis</el-button
+            >
+          </div>
+          <ul>
+            <li
+              v-for="it in obj.eles"
+              :key="it"
+              v-html="it"
+              :style="obj.style"
+            ></li>
+          </ul>
+          <graph
+            v-if="obj.vis"
+            :best="false"
+            :obj="obj"
+            style="width: 800px"
+          ></graph>
+          <p>{{ obj.info }}</p>
         </div>
-        <ul>
-          <li
-            v-for="it in obj.eles"
-            :key="it"
-            v-html="it"
-            :style="obj.style"
-          ></li>
-        </ul>
-        <graph
-          v-if="obj.vis"
-          :best="false"
-          :obj="obj"
-          style="width: 800px"
-        ></graph>
-        <p>{{ obj.info }}</p>
-      </div>
+      </el-scrollbar>
     </div>
   </div>
 </template>
@@ -91,7 +93,7 @@ export default {
   },
   watch: {
     deal_num(val) {
-      console.log(`${val} ${this.search_num}`);
+      // console.log(`${val} ${this.search_num}`);
       if (val > 0) {
         const cur_time = new Date().getTime();
         this.deal_time.push((cur_time - this.last_time) / 1000);
@@ -149,16 +151,18 @@ export default {
         url: "/search/svg/",
         params: {
           keyWords: this.$store.state.theme,
-          imgNum: 15,
+          imgNum: 8,
         },
       }).then((res) => {
         // this.$store.state.theme = this.img_content;
         res.data.svgs.forEach(it => {
           let obj = this.formatSvg(it);
+          // console.log('yyyyyyyyyyyyyyyyyyyyy');
+          // console.log(obj);
           //console.log(obj.has_color);
           if (obj.has_color && obj.svgs.length >= 4 && obj.svgs.length <= 9) {
             this.uploadSegmentation(obj);
-            this.all_svgs.push(obj.svgs);
+            this.$store.state.all_svgs.push(obj.svgs);
           }
         });
         //console.log(this.previewElements);
@@ -167,7 +171,12 @@ export default {
       });
     },
     filterContent(obj, tag, svg_obj) {
+      // console.log(obj);
       // console.log(tag);
+      const invalid_tags = ['title'];
+      if (invalid_tags.includes(tag)) {
+        return;
+      }
       if (Object.prototype.toString.call(obj) === "[object Array]") {
         for (let i = 0; i < obj.length; i++) {
           this.filterContent(obj[i], tag, svg_obj);
@@ -218,6 +227,10 @@ export default {
           }
         });
       }
+      if (keys.includes('_fill')) {
+        path_obj.fill = obj._fill;
+        svg_obj.has_color = true;
+      }
       if (path_obj['fill'] === undefined) {
         path_obj.fill = 'black';
       }
@@ -267,7 +280,7 @@ export default {
             //console.log(obj);
             if (obj.svgs.length >= 4 && obj.svgs.length <= 9) {
               _this.uploadSegmentation(obj);
-              _this.all_svgs.push(obj.svgs);
+              _this.$store.state.all_svgs.push(obj.svgs);
               // _this.getImgPixelColor(it, _this.deal_num);
               _this.deal_num++;
               //console.log(`B == ${_this.deal_num}`);
@@ -325,6 +338,7 @@ export default {
       console.log(`map part ${pos} ${num} ${best_img}`);
       if (pos >= num) {
         this.$store.state.mapper = best_map;
+        this.$store.state.selected_index = best_img;
         const obj = this.$store.state.img_preview[best_img];
         this.$store.state.selected_img = obj;
         this.$store.state.img_ready = true;
@@ -339,12 +353,13 @@ export default {
         return;
       }
       let up_data = {
-        // content: this.$store.state.theme,
-        content: "burger",
+        content: this.$store.state.theme,
+        // content: "burger",
         dataProps: this.$store.state.props,
+        dataTypes: this.$store.state.data_type,
         groups : this.$store.state.group_props,
-        // dataProps: ['Item', 'cheese', 'bacon', 'Calories'],
-        svgsList: this.all_svgs.slice(pos, pos + 2),
+        svgsList: this.$store.state.all_svgs.slice(pos, pos + 2),
+        mapped: []
       };
       this.$axios({
         method: "post",
@@ -375,7 +390,7 @@ export default {
         }
         this.mapPartData(
           pos + cur_len,
-          this.all_svgs.length,
+          this.$store.state.all_svgs.length,
           best_img,
           best_score,
           best_map
@@ -384,14 +399,16 @@ export default {
     },
     getDataMap() {
       console.log("===================");
-      this.mapPartData(0, this.all_svgs.length, -1, -1, []);
+      this.mapPartData(0, this.$store.state.all_svgs.length, -1, -1, []);
     },
     getPathSize(d) {
       // console.log(d);
       this.$refs.svgSize.innerHTML = `<svg><path d="${d}"></path></svg>`;
-      const d_size =
-        this.$refs.svgSize.childNodes[0].childNodes[0].getBoundingClientRect();
+      const svg_size = this.$refs.svgSize.childNodes[0].getBoundingClientRect();
+      let d_size = this.$refs.svgSize.childNodes[0].childNodes[0].getBoundingClientRect();
       this.$refs.svgSize.innerHTML = "";
+      d_size["midX"] = (d_size.left + d_size.right) / 2 - svg_size.left;
+      d_size["midY"] = (d_size.top + d_size.bottom) / 2 - svg_size.top;
       return d_size;
     },
     segmentSvg(src) {
@@ -429,6 +446,7 @@ export default {
     },
     formatSvg(src) {
       const xml_obj = this.$x2js.xml2js(src);
+      console.log(xml_obj);
       let svg_obj = {paths: [], has_color: false};
       this.filterContent(xml_obj.svg, 'svg', svg_obj);
       // console.log(svg_obj);
@@ -502,7 +520,7 @@ export default {
       }
       ori_svg += '</svg>';
       dis.eles = [ori_svg].concat(eles);
-      console.log(dis);
+      // console.log(dis);
       this.$store.state.img_preview.push(dis);
     },
     filterSepSvgs(path_list, img_width, img_height, consider_radial) {
@@ -591,8 +609,10 @@ export default {
         return "linear_horizon";
       } else if (size.height / size.width >= 3.5) {
         return "linear_vertical";
-      } else {
+      } else if (size.height / size.width <= 1.5 && size.width / size.height <= 1.5) {
         return "square";
+      } else {
+        return "rect";
       }
     },
   },

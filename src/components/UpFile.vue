@@ -15,13 +15,12 @@
         <div class="el-upload__text">Click or drag the file here to upload</div>
       </el-upload>
     </div>
-
     <div v-show="dataReady" class="table-area" style="margin-top: 20px">
       <el-table
         :data="tableData"
         border
-        height="350px"
-        style="width: 100%"
+        height="260px"
+        style="width: 94%; margin-left: 3%"
         :header-cell-style="{ background: '#ffe3b1', color: '#dd9f20' }"
         :row-style="tableRowStyle"
       >
@@ -32,18 +31,21 @@
           :label="it"
         ></el-table-column>
       </el-table>
-      <div style="margin-top: 16px; text-align: left">
-        <el-select v-for="(it, idx) in groups" :key="idx" v-model="groups[idx]" 
-          multiple placeholder="Select Props" style="margin-right: 16px; width: 320px;">
-          <el-option
-            v-for="(item, index) in noGroupProps(idx)"
-            :key="index"
-            :label="item"
-            :value="item"
-          >
-          </el-option>
-        </el-select>
-        <el-button @click="addGroup">Add Group</el-button>
+      <p class="title">Groups</p>
+      <div style="width: 94%; margin-left:3%; margin-top: 16px; text-align: left; background-color: white; padding: 8px;">
+        <div v-for="(it, idx) in groups" :key="idx"  style="margin-top: 5px; margin-bottom: 5px;">
+          <span style="margin-left: 5px;">Group {{ idx }}</span>
+          <el-select v-model="groups[idx]" multiple placeholder="Select Props" style="margin-left: 10px; width: 70%">
+            <el-option
+              v-for="(item, index) in noGroupProps(idx)"
+              :key="index"
+              :label="item"
+              :value="item"
+            >
+            </el-option>
+          </el-select>
+        </div>
+        <el-button @click="addGroup" style="margin-top: 5px; background: #ffe3b1;">Add Group</el-button>
       </div>
       <el-button type="warning" class="btn-options" id="btn-ge" @click="generate">Generate</el-button>
       <el-button type="warning" class="btn-options" plain id="btn-re" @click="resetData">Re-upload</el-button>
@@ -171,8 +173,9 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 .table-area {
-  width: 94%;
-  margin-left: 3%;
+  // width: 94%;
+  // margin-left: 3%;
+  width: 100%;
 }
 
 .el-table thead {
@@ -184,10 +187,14 @@ export default {
 }
 
 .btn-options {
-  width: 180px;
-  height: 50px;
-  margin-top: 29px;
-  font-size: 20px;
+  // width: 180px;
+  // height: 50px;
+  // margin-top: 22px;
+  // font-size: 20px;
+  width: 120px;
+  height: 42px;
+  margin-top: 16px;
+  font-size: 18px;
 }
 
 #btn-re {

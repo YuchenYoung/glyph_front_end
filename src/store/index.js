@@ -17,6 +17,7 @@ export default new Vuex.Store({
     theme: "",
 
     //img view
+    all_svgs: [],
     d_list: [],
     paths_size: [],
     img_type: [],
@@ -26,6 +27,7 @@ export default new Vuex.Store({
     img_preview: [],
     img_ready: false,
     mapper: {},
+    selected_index: 0,
     selected_img: {}
   },
   mutations: {
@@ -61,14 +63,14 @@ export default new Vuex.Store({
       const isCategorical = (arr) => {
         const key_set = new Set();
         arr.forEach((it) => {
-          if (key_set.size > 7) {
+          if (key_set.size > 10) {
             return false;
           }
           if (!key_set.has(it)) {
             key_set.add(it);
           }
         });
-        return key_set.size <= 7;
+        return key_set.size <= 10;
       };
       const getDataRange = (arr) => {
         if (typeof arr[0] != typeof 0) {
@@ -79,7 +81,23 @@ export default new Vuex.Store({
           max: Math.max.apply(null, arr),
         };
       };
-      const judgeDataType = (arr) => {
+      const isTimeProp = (prop) => {
+        const time_props = ['time', 'year', 'date', 'day']
+        return time_props.includes(prop);
+      }; 
+      const isGeogData = (prop => {
+        if (prop.length >= 0) {
+          return false;
+        }
+        return false;
+      })
+      const judgeDataType = (prop, arr) => {
+        if (isTimeProp(prop)) {
+          return "time";
+        }
+        if (isGeogData(prop)) {
+          return "geography";
+        }
         const value_type = typeof arr[0];
         if (value_type == typeof 0) {
           if (isInteger(arr)) {
@@ -104,9 +122,7 @@ export default new Vuex.Store({
       // data process
       const data = this.state.data;
       this.state.props.forEach((it) => {
-        this.state.data_type[it] = judgeDataType(
-          data.map((d) => d[it])
-        );
+        this.state.data_type[it] = judgeDataType(it, data.map((d) => d[it]));
         this.state.data_range[it] = getDataRange(
           data.map((d) => d[it])
         );

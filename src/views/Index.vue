@@ -1,6 +1,6 @@
 <template>
   <el-container>
-    <el-header height='80px'> MetaGlyph </el-header>
+    <el-header height='50px'> MetaGlyph </el-header>
     <el-container>
       <el-aside style="width: auto">
         <navigator></navigator>
@@ -54,10 +54,29 @@ export default {
 .el-header {
   font-family: "QuiteMagical";
   letter-spacing: 5px;
-  font-size: 90px;
+  font-size: 60px;
   color: @bgGray;
   text-align: center;
   height: 200px;
   background-color: @themeYelllow;
 }
+
+.el-scrollbar {
+  height: 100%;
+}
+
+.el-scrollbar__wrap {
+  overflow: scroll;
+}
+
+.horizon-scroll .el-scrollbar__wrap {
+  height: 120%;
+  overflow-y: hidden;
+}
+
+.vertical-scroll .el-scrollbar__wrap {
+  width: 110%;
+  overflow-x: hidden;
+}
+
 </style>

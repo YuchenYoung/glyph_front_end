@@ -30,7 +30,7 @@
   text-align: left;
   margin-left: 24px;
   margin-top: 0;
-  margin-bottom: 14px;
+  margin-bottom: 8px;
   padding-top: 16px;
   font-size: 28px;
   font-weight: 500;

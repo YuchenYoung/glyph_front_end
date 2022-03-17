@@ -37,16 +37,18 @@ export default {
       // data_size: 0,
       pie_cnt: 0,
       star_cnt: 0,
+      index: 0,
+      x_prop: '',
+      y_prop: '',
     };
   },
   computed: {},
   mounted() {
-    //console.log("~~~~~~---~~~~~~~");
-    //console.log(this.best);
     if (this.best) {
       this.img_obj = this.$store.state.selected_img;
     } else {
       this.img_obj = this.obj;
+      this.index = this.obj.index;
       this.div_id = `graphDiv${this.obj.index}`;
       this.svg_id = `mainsvg${this.obj.index}`;
     }
@@ -109,7 +111,7 @@ export default {
       if (ele_type == "linear_vertical") {
         return "size";
       }
-      if (ele_type == "square") {
+      if (ele_type == "square" || ele_type == "rect") {
         return "size";
       }
       return "none";
@@ -124,21 +126,34 @@ export default {
       );
     },
     dataEncoding() {
-      // console.log(this.img_obj);
-      // const props = this.$store.state.props;
       const data_type = this.$store.state.data_type;
-      // const ele_type = this.$store.state.img_type;
       const ele_type = this.img_obj.img_type;
       const mapping_res = this.img_obj.mapper;
-      // console.log(mapping_res);
-      // const mapping_res = this.$store.state.mapper;
-      console.log("----------------------");
-      // console.log(data_type);
-      // console.log(ele_type);
-      console.log(mapping_res);
+      //console.log("----------------------");
+      //console.log(mapping_res);
       let encoding_res = [];
-      // encoding_res.fill()
+      let axis = 0;
       mapping_res.forEach((it) => {
+        if (it.element == 0) {
+          if (axis == 0) {
+            this.x_prop = it.prop;
+            encoding_res.push({
+              prop: it.prop,
+              element: 0,
+              encoding: 'x',
+            });
+          }
+          else if (axis == 1) {
+            this.y_prop = it.prop;
+            encoding_res.push({
+              prop: it.prop,
+              element: 0,
+              encoding: 'y',
+            });
+          }
+          axis++;
+          return;
+        }
         if (it.is_group) {
           encoding_res.push({
             is_group: true,
@@ -174,74 +189,93 @@ export default {
       encoding_res.sort((a, b) => {
         return a.element - b.element;
       });
-      console.log(encoding_res);
+      //console.log(encoding_res);
       return encoding_res;
     },
 
     drawGraph(p_encoding) {
       // console.log(p_encoding);
-
       this.vis_display = true;
       const graph_width = this.$refs.mainGraph.getBoundingClientRect().width;
-      // const graph_width = document.getElementById(this.div_id).getBoundingClientRect().width;
       const _this = this;
       const encoding = p_encoding;
-      // const vis_svg = d3.select("#mainsvg");
       const vis_svg = d3.select(`#${this.svg_id}`);
-      // console.log(vis_svg);
       vis_svg
         .attr("width", graph_width * 0.9)
-        .attr("height", graph_width * 0.5);
-      vis_svg.attr("viewBox", "0 0 1500 750");
+        .attr("height", graph_width * 0.5)
+        .attr("viewBox", "0 0 1500 750")
+        .attr("transform", `translate(${graph_width * 0.05}, 0)`)
       // const vis_width = +vis_svg.attr("width");
       // const vis_height = +vis_svg.attr("height");
       const vis_width = 1500;
-      // const vis_height = 750;
+      const vis_height = 750;
       const margin = { top: 50, right: 100, bottom: 50, left: 100 };
       const inner_width = vis_width - margin.left - margin.right;
-      // const inner_height = vis_height - margin.top - margin.bottom;
+      const inner_height = vis_height - margin.top - margin.bottom;
       const g = vis_svg
         .append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
       let stran = { tx: 0, ty: 0 };
-      let pos_x = 0,
-        pos_y = 0,
-        next_y = 0;
+      let pos_x = 0, pos_y = 0, next_y = 0;
       const data = this.$store.state.data;
       const ds = this.img_obj.d_list;
       const fills = this.img_obj.fill;
       let img_width = this.img_obj.ori_size.width;
       let img_height = this.img_obj.ori_size.height;
-
-      /*
-      const xValue = (datum) => {
-        return datum.year;
-      };
-      const yValue = (datum) => {
-        return datum.mileage;
-      };
-
+      const x_prop = this.x_prop;
+      const y_prop = this.y_prop;
+      let xValue, yValue;
       let xScale, yScale;
+      const data_type = this.$store.state.data_type;
+      let category_map = {};
+
+      const category_init = (prop, arr) => {
+        const colors = ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd']
+        let pos = 0;
+        category_map[prop] = {};
+        let cat_set = new Set();
+        arr.forEach((it) => {
+          if (!cat_set.has(it)) {
+            cat_set.add(it);
+            category_map[prop][it] = colors[pos];
+            pos++;
+          }
+        });
+      };
 
       const render_init = (data) => {
-        xScale = d3
-          .scaleLinear()
-          .domain([d3.min(data, xValue), d3.max(data, xValue)])
-          .range([0, inner_width])
-          .nice();
-        yScale = d3
-          .scaleLinear()
-          .domain([d3.max(data, yValue), d3.min(data, yValue)])
-          .range([0, inner_height])
-          .nice();
-        const xAxis = d3.axisBottom(xScale).tickSize(inner_height);
-        g.append("g").call(xAxis);
-        const yAxis = d3.axisLeft(yScale).tickSize(-inner_width);
-        g.append("g").call(yAxis);
+        if (x_prop != '' && y_prop != '') {
+          xValue = (datum) => {
+            return datum[x_prop];
+          };
+          xScale = d3
+            .scaleLinear()
+            .domain([d3.min(data, xValue), d3.max(data, xValue)])
+            .range([0, inner_width])
+            .nice();
+          const xAxis = d3.axisBottom(xScale).tickSize(inner_height);
+          g.append("g").call(xAxis);
+        }
+        if (x_prop != '' && y_prop != '') {
+          yValue = (datum) => {
+            return datum[y_prop];
+          };
+          yScale = d3
+            .scaleLinear()
+            .domain([d3.max(data, yValue), d3.min(data, yValue)])
+            .range([0, inner_height])
+            .nice();
+          const yAxis = d3.axisLeft(yScale).tickSize(-inner_width);
+          g.append("g").call(yAxis);
+        }
         g.selectAll(".tick text").attr("font-size", "1.5em");
+        encoding.forEach(it => {
+          if (!it.is_group && data_type[it.prop] == "category") {
+            category_init(it.prop, data.map(d => d[it.prop]))
+          }
+        })
       };
-      */
 
       const render_color = (base, d, color) => {
         base
@@ -410,9 +444,9 @@ export default {
       };
 
       const render_star = (base, d, size, color, props, datum) => {
-        const star_tx = size.width * 0.5;
-        const star_ty = size.height * 0.5;
-        const radius = Math.max(size.width, size.height) / 2;
+        const star_tx = size.midX;
+        const star_ty = size.midY;
+        const radius = Math.min(size.width, size.height) / 2;
         let values = [];
         props.forEach((it) => {
           values.push(datum[it]);
@@ -421,12 +455,12 @@ export default {
         for (let i = 0; i < values.length; i++) {
           values[i] = (radius * values[i]) / value_max;
         }
-        const path = d3.radialLine();
+        const pathGen = d3.lineRadial();
         let pathData = [];
-        let r = Math.PI / 2,
+        let r = 0,
           radians = (2 * Math.PI) / props.length;
         values.forEach((d) => {
-          pathData.push([d, r]);
+          pathData.push([r, d]);
           r += radians;
         });
 
@@ -438,8 +472,11 @@ export default {
         star_plot
           .append("path")
           .attr("class", "star-path")
-          .attr("transform", `translate(${radius}, ${radius})`)
-          .attr("d", path(pathData) + "Z");
+          .attr("d", pathGen(pathData) + "Z")
+          .attr('stroke', '#444')
+          .attr('stroke-width', 2)
+          .attr('fill', color)
+          .attr('fill-opacity', 0.6)
         this.star_cnt++;
       };
 
@@ -474,7 +511,7 @@ export default {
         }
       };
 
-      const render_glyph_transform = (glyph, width) => {
+      const render_glyph_transform = (datum, glyph, width) => {
         let scale = width / img_width;
         let height = img_height * scale;
         if (pos_x + width > inner_width) {
@@ -485,19 +522,24 @@ export default {
         //const trany = img_height * 0.5 * (scale - 1);
         // const tranx = pos_x;
         // const trany = pos_y;
+        let glyph_x = pos_x, glyph_y = pos_y;
+        if (x_prop != '' && y_prop != '') {
+          glyph_x = xScale(xValue(datum)) - width * 0.5;
+          glyph_y = yScale(yValue(datum)) - height * 0.5;
+        }
         glyph
           .attr("width", width)
           .attr("height", height)
           .attr(
             "transform",
-            `translate(${pos_x},${pos_y}),scale(${scale},${scale})`
+            `translate(${glyph_x},${glyph_y}),scale(${scale},${scale})`
           );
         pos_x += width + stran.tx;
         next_y = Math.max(next_y, pos_y + height);
       };
 
       const render_data = (data) => {
-        const glyph = g.append("g").attr("class", "burg");
+        const glyph = g.append("g").attr("class", `glyph-${this.index}`);
         const path_size = _this.img_obj.path_size;
         for (let i = 1; i < ds.length; i++) {
           stran.tx = 0;
@@ -532,15 +574,8 @@ export default {
             );
             render_length(glyph, ds[i], path_size[i], fills[i], mapped_value);
           } else if (encoding_type == "color") {
-            const mapped_value = parseInt(
-              this.dataRangeMapping(
-                data[encoding[pos]["prop"]],
-                encoding[pos]["prop"],
-                0,
-                255
-              )
-            );
-            render_color(glyph, ds[i], `rgb(${mapped_value}, 0, 0)`);
+            const cur_fill = category_map[encoding[pos]["prop"]][data[encoding[pos]["prop"]]];
+            render_color(glyph, ds[i], cur_fill);
           } else if (encoding_type == "alpha") {
             const mapped_value = parseInt(
               this.dataRangeMapping(
@@ -589,7 +624,7 @@ export default {
             );
           }
         }
-        render_glyph_transform(glyph, 120);
+        render_glyph_transform(data, glyph, 120);
       };
 
       const render = (data) => {
@@ -598,14 +633,49 @@ export default {
         });
       };
 
-      // render([data[0]]);
+      render_init(data);
       render(data);
     },
     generateGraph() {
       this.to_generate = false;
       const encoding_res = this.dataEncoding();
       this.drawGraph(encoding_res);
+      const _this = this;
+      _this.$nextTick(() => {
+        _this.check_render();
+        if (this.best) {
+          this.$emit('selectedImgEncoding', encoding_res);
+        }
+      })
     },
+    check_render() {
+      //console.log('=========== render check ==============');
+      const glyph_doms = document.getElementsByClassName(`glyph-${this.index}`)
+      //console.log(glyph_doms);
+      //console.log(glyph_doms.length);
+      let boxes = [];
+      for (let i = 0; i < glyph_doms.length; i++) {
+        boxes.push(glyph_doms[i].getBoundingClientRect());
+      }
+      //console.log(boxes);
+      let max_overlap = 0;
+      for (let i = 0; i < boxes.length; i++) {
+        const li = boxes[i].left, ri = boxes[i].right;
+        const ti = boxes[i].top, bi = boxes[i].bottom;
+        const wi = boxes[i].width, hi = boxes[i].height;
+        for (let j = i + 1; j < boxes.length; j++) {
+          const lj = boxes[j].left, rj = boxes[j].right;
+          const tj = boxes[j].top, bj = boxes[j].bottom;
+          const wj = boxes[j].width, hj = boxes[j].height;
+          if (Math.min(ri, rj) <= Math.max(li, lj) || Math.min(bi, bj) <= Math.max(ti, tj)) {
+            continue;
+          }
+          const overlap = (Math.min(ri, rj) - Math.max(li, lj)) * (Math.min(bi, bj) - Math.max(ti, tj));
+          max_overlap = Math.max(max_overlap, overlap / Math.min(wi * hi, wj* hj));
+        }
+      }
+      //console.log(max_overlap);
+    }
   },
 };
 </script>

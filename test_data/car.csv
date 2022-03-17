@@ -1,0 +1,50 @@
+model,year,price,transmission,mileage,fuelType,tax,mpg,engineSize
+ Octavia,2017,10550,Manual,25250,Petrol,150,54.3,1.4
+ Citigo,2018,8200,Manual,1264,Petrol,145,67.3,1
+ Octavia,2019,15650,Automatic,6825,Diesel,145,67.3,2
+ Yeti Outdoor,2015,14000,Automatic,28431,Diesel,165,51.4,2
+ Superb,2019,18350,Manual,10912,Petrol,150,40.9,1.5
+ Yeti Outdoor,2017,13250,Automatic,47005,Diesel,145,51.4,2
+ Superb,2019,15250,Manual,14850,Petrol,145,40.9,1.5
+ Octavia,2019,18950,Automatic,5850,Diesel,150,50.4,2
+ Kodiaq,2019,29900,Automatic,2633,Petrol,150,31.4,2
+ Octavia,2017,18990,Manual,20000,Petrol,150,43.5,2
+ Octavia,2016,8500,Automatic,91280,Diesel,30,64.2,2
+ Octavia,2017,8695,Manual,84450,Diesel,0,74.3,1.6
+ Superb,2016,7000,Manual,109060,Diesel,20,68.9,1.6
+ Rapid,2016,7950,Manual,33013,Petrol,20,57.7,1.2
+ Karoq,2018,19772,Manual,12894,Petrol,150,51.4,1.5
+ Fabia,2012,4695,Manual,54631,Petrol,125,49.6,1.2
+ Fabia,2012,4250,Manual,61000,Petrol,125,49.6,1.2
+ Octavia,2018,13490,Automatic,31866,Diesel,150,72.4,1.6
+ Yeti,2014,9980,Manual,41936,Diesel,205,48.7,2
+ Fabia,2017,11290,Manual,15282,Petrol,150,64.2,1
+ Scala,2020,17000,Manual,731,Petrol,150,50.4,1
+ Octavia,2019,13490,Manual,14449,Petrol,150,55.4,1.5
+ Octavia,2019,14490,Automatic,14896,Petrol,150,57.7,1
+ Octavia,2019,19000,Automatic,7000,Petrol,145,47.9,2
+ Fabia,2019,13490,Manual,6000,Petrol,145,51.4,1
+ Superb,2018,14690,Manual,13939,Petrol,145,40.9,1.5
+ Fabia,2017,11890,Automatic,10660,Petrol,150,60.1,1.2
+ Kodiaq,2019,21290,Automatic,11932,Petrol,145,34,1.5
+ Kodiaq,2019,28000,Automatic,14398,Diesel,150,49.6,2
+ Superb,2019,17490,Automatic,10587,Diesel,150,62.8,2
+ Superb,2019,23000,Automatic,5000,Petrol,145,36.7,1.5
+ Fabia,2019,8690,Manual,12368,Petrol,145,50.4,1
+ Fabia,2019,12690,Manual,2174,Petrol,150,50.4,1
+ Kodiaq,2019,29000,Automatic,3785,Petrol,150,31.4,2
+ Kodiaq,2019,29000,Automatic,5705,Petrol,150,31.4,2
+ Superb,2017,20000,Automatic,8448,Diesel,150,61.4,2
+ Yeti Outdoor,2016,16000,Automatic,18200,Diesel,165,51.4,2
+ Octavia,2019,13690,Automatic,13393,Diesel,145,72.4,1.6
+ Octavia,2019,13000,Manual,15084,Diesel,145,68.9,1.6
+ Superb,2019,24490,Automatic,15,Petrol,145,38.2,2
+ Fabia,2019,13000,Manual,2696,Petrol,145,64.2,1
+ Fabia,2019,10290,Manual,4597,Petrol,145,57.7,1
+ Octavia,2019,14590,Automatic,14375,Diesel,145,70.6,1.6
+ Fabia,2016,9690,Manual,15000,Petrol,20,58.9,1.2
+ Octavia,2019,12695,Manual,12421,Diesel,150,68.9,1.6
+ Karoq,2018,20490,Manual,15296,Petrol,150,51.4,1.5
+ Karoq,2019,25390,Automatic,5347,Petrol,145,33.2,2
+ Octavia,2019,14695,Manual,14741,Petrol,150,52.3,1.5
+ Kodiaq,2020,31000,Automatic,5790,Diesel,145,39.2,2

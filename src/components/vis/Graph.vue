@@ -6,6 +6,7 @@
       width: 92%;
       margin-left: 4%;
       border: 3px solid #e4ae40;
+      border-radius: 6px;
       background: white;
     "
   >
@@ -22,7 +23,7 @@
 import * as d3 from "d3";
 export default {
   name: "Graph",
-  props: ["best", "obj"],
+  props: ["best", "old", "obj"],
   data() {
     return {
       vis_display: false,
@@ -48,9 +49,13 @@ export default {
       this.img_obj = this.$store.state.selected_img;
     } else {
       this.img_obj = this.obj;
-      this.index = this.obj.index;
-      this.div_id = `graphDiv${this.obj.index}`;
-      this.svg_id = `mainsvg${this.obj.index}`;
+      if (this.old) {
+        this.index = 100 + this.obj.index;
+      } else {
+        this.index = this.obj.index;
+      }
+      this.div_id = `graphDiv${this.index}`;
+      this.svg_id = `mainsvg${this.index}`;
     }
     this.$nextTick(() => {
       if (this.to_generate) {
@@ -200,12 +205,18 @@ export default {
       const _this = this;
       const encoding = p_encoding;
       const vis_svg = d3.select(`#${this.svg_id}`);
+      let svg_height = graph_width * 0.5;
+      let svg_width = graph_width * 0.9;
+      if (svg_height < 1 || svg_width < 1) {
+        svg_height = 100;
+        svg_width = 180;
+      }
       vis_svg
         .attr("xmlns", "http://www.w3.org/2000/svg")
-        .attr("width", graph_width * 0.9)
-        .attr("height", graph_width * 0.5)
+        .attr("width", svg_width)
+        .attr("height", svg_height)
         .attr("viewBox", "0 0 1500 750")
-        .attr("transform", `translate(${graph_width * 0.05}, 0)`)
+        .attr("transform", `translate(${svg_height * 0.08}, 0)`)
       // const vis_width = +vis_svg.attr("width");
       // const vis_height = +vis_svg.attr("height");
       const vis_width = 1500;

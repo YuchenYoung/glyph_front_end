@@ -342,6 +342,7 @@ export default {
         const obj = this.$store.state.img_preview[best_img];
         this.$store.state.selected_img = obj;
         this.$store.state.img_ready = true;
+        this.$store.state.first_imgs = JSON.parse(JSON.stringify(this.$store.state.img_preview));
         this.$message({ message: "Image Ready", type: "success" });
         this.$router.push({ path: "/index/vis" });
         // this.$store.state.best_img = {

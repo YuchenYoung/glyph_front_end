@@ -3,8 +3,11 @@
     <p class="title">Gallery</p>
     <div style="width: 100%; height: 480px;">
       <el-scrollbar class="vertical-scroll">
-        <div v-for="(it, index) in objs" :key="index" @click="changeBest($event, index)" style="width: 86%; margin-left: 4%; margin-top: 10px">
-          <graph :best="false" :obj="it" ref="altGraph" :key="render_keys[index]"></graph>
+        <div v-for="(it, index) in objs" :key="index" @click="changeBest($event, index)" style="width: 86%; margin-left: 2%; margin-top: 10px">
+          <el-popover placement="left" width="240" trigger="hover">
+            <graph :best="false" :old="true" :obj="firstImg(index)"></graph>
+            <graph :best="false" :old="false" :obj="it" ref="altGraph" :key="render_keys[index]" slot="reference"></graph>
+          </el-popover>
         </div>
       </el-scrollbar>
     </div>
@@ -23,6 +26,13 @@ export default {
       render_keys: [],
     };
   },
+  computed: {
+    firstImg() {
+      return function(index) {
+        return this.$store.state.first_imgs[index];
+      }
+    }
+  },
   created() {
     this.objs = this.$store.state.img_preview;
     this.render_keys = new Array(this.objs.length).fill(0);
@@ -40,6 +50,8 @@ export default {
       _this.$nextTick(() => {
         // these two ways don't work
         // _this.render_keys[index]++;
+        // console.log('yyyyyyyyyyyyyyyyy');
+        // console.log(_this.$refs);
         _this.$refs.altGraph[index].$forceUpdate();
       })
     }

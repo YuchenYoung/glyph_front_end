@@ -25,6 +25,7 @@ export default new Vuex.Store({
     svg_height: 0,
     svg_list: [],
     img_preview: [],
+    first_imgs: [],
     img_ready: false,
     mapper: {},
     selected_index: 0,

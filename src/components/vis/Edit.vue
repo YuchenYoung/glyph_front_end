@@ -4,9 +4,11 @@
     <div class="edit-area" style="">
       <el-scrollbar class="horizon-scroll">
         <div v-for="(it, idx) in maps" :key="idx" class="edit-item" :style="{'border-color': it.last ? '#1ea7c0': '#e4ae40'}">
-          <div class="prop-box" @click="lockMap($event, it, idx)" :style="{'background-color': it.locked ? '#ffffaa' : 'white'}">
-            {{ it.prop }}
-          </div>
+          <el-tooltip class="item" effect="light" :content="it.dtype" placement="top">
+            <div class="prop-box" @click="lockMap($event, it, idx)" :style="{'background-color': it.locked ? '#ffffaa' : 'white'}">
+              {{ it.prop }}
+            </div>
+          </el-tooltip>
           <div style="margin-top: 10px;">
             <span>Element</span>
             <el-select v-model="it.element" size="mini" style="width: 90px; margin-left: 10px">
@@ -40,11 +42,11 @@ export default {
   },
   created() {
     const props = this.$store.state.props;
-    const group_props = this.$store.state.group_props;
+    const groups = this.$store.state.group_props;
     const mapped_props = [];
     const last_props = this.lastProps;
     const locked_props = this.lockedProps;
-    // const maps = this.$store.state.selected_img.mapper; 
+    const data_type = this.$store.state.data_type;
     const img = this.$store.state.selected_img;
     for (let i = 0; i < img.d_list.length; i++) {
       this.elements.push(i);
@@ -52,9 +54,12 @@ export default {
     let group_cnt = 0;
     for (let i = 0; i < this.encoding.length; i++) {
       let prop = this.encoding[i].prop;
+      let dtype = "group";
       if (this.encoding[i].is_group) {
         prop = `group${group_cnt}`;
         group_cnt++;
+      } else {
+        dtype = data_type[prop];
       }
       if (prop != 'none') {
         let in_last = false;
@@ -66,12 +71,15 @@ export default {
           element: this.encoding[i].element,
           type: this.encoding[i].encoding,
           last: in_last,
-          locked: in_locked
+          locked: in_locked,
+          dtype: dtype
         });
         mapped_props.push(prop)
       }
     }
-    const single_props = props.filter(d => !group_props.includes(d) && !mapped_props.includes(d));
+    let group_props = [];
+    groups.forEach(it => { group_props = group_props.concat(it); })
+    const single_props = props.filter(d => (!group_props.includes(d) && !mapped_props.includes(d)));
     single_props.forEach(it => {
       let in_locked = false;
       if (locked_props.includes(it)) in_locked = true;
@@ -81,6 +89,7 @@ export default {
         type: "none",
         last: false,
         locked: in_locked,
+        dtype: data_type[it]
       });
     });
   },
@@ -109,6 +118,7 @@ export default {
   margin-right: 10px; 
   display: inline-block; 
   border: 2px solid #e4ae40; 
+  border-radius: 6px;
 }
 
 .prop-box {

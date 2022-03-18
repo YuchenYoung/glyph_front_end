@@ -20,7 +20,7 @@
       <edit :key="editKey" :lastProps="last_props" :lockedProps="locked_props" :encoding="selectedEncoding" ref="edit" style="height: 34%"></edit>
     </el-col>
     <el-col :span="6">
-      <alternative ref="alt" v-on:selectedImgChanged="getSelectedChanged"></alternative>
+      <alternative ref="alt" :key="altKey" v-on:selectedImgChanged="getSelectedChanged"></alternative>
     </el-col>
   </el-row>
 </template>
@@ -40,6 +40,7 @@ export default {
     return {
       selectedKey: 0,
       editKey: 0,
+      altKey: 0,
       selectedEncoding: [],
       img_obj: {},
       last_props: [],
@@ -112,7 +113,8 @@ export default {
         _this.img_obj = _this.$store.state.selected_img;
         _this.$nextTick(() => {
           _this.selectedKey += 1;
-          _this.$refs.alt.updateRender(this.$store.state.selected_index);
+          _this.altKey += 1;
+          // _this.$refs.alt.updateRender(this.$store.state.selected_index);
         })
       })
     },

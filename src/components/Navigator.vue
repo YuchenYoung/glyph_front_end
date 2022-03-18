@@ -8,6 +8,14 @@
       </div>
       <span slot="title" class="item-span">Data</span>
     </el-menu-item>
+    <el-menu-item index="/index/preprocess" id="nav-preprocess">
+      <div class="menu-background" id="bg-preprocess">
+        <svg width="24" height="24" viewBox="0 0 31 31">
+          <path d="M9.86364 9.86364V15.5H16.9091V9.86364H9.86364ZM0 0H5.63636V1.40909H25.3636V0H31V5.63636H29.5909V25.3636H31V31H25.3636V29.5909H5.63636V31H0V25.3636H1.40909V5.63636H0V0ZM5.63636 25.3636V26.7727H25.3636V25.3636H26.7727V5.63636H25.3636V4.22727H5.63636V5.63636H4.22727V25.3636H5.63636ZM7.04545 7.04545H19.7273V12.6818H23.9545V23.9545H9.86364V18.3182H7.04545V7.04545ZM19.7273 18.3182H12.6818V21.1364H21.1364V15.5H19.7273V18.3182Z" fill="white"/>
+        </svg>
+      </div>
+      <span slot="title" class="item-span">Preprocess</span>
+    </el-menu-item>
     <el-menu-item index="/index/image" id="nav-image">
       <div class="menu-background" id="bg-image">
         <svg width="24" height="24" viewBox="0 0 36 32">
@@ -58,6 +66,10 @@ export default {};
   border: 2px solid #e4ae40;
 }
 
+#nav-preprocess.is-active {
+  border: 2px solid #e4ae40;
+}
+
 #nav-vis.is-active {
   border: 2px solid #e56240;
 }
@@ -71,6 +83,10 @@ export default {};
 }
 
 #nav-image {
+  color: #e4ae40;
+}
+
+#nav-preprocess {
   color: #e4ae40;
 }
 
@@ -102,6 +118,10 @@ export default {};
   fill: #1e6c69;
 }
 
+#bg-preprocess svg path {
+  fill: #e4ae40;
+}
+
 #bg-image svg path {
   fill: #e4ae40;
 }
@@ -115,6 +135,10 @@ export default {};
 }
 
 .is-active #bg-image {
+  background-color: #e4ae40;
+}
+
+.is-active #bg-preprocess {
   background-color: #e4ae40;
 }
 

@@ -201,6 +201,7 @@ export default {
       const encoding = p_encoding;
       const vis_svg = d3.select(`#${this.svg_id}`);
       vis_svg
+        .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("width", graph_width * 0.9)
         .attr("height", graph_width * 0.5)
         .attr("viewBox", "0 0 1500 750")
@@ -455,28 +456,43 @@ export default {
         for (let i = 0; i < values.length; i++) {
           values[i] = (radius * values[i]) / value_max;
         }
-        const pathGen = d3.lineRadial();
-        let pathData = [];
-        let r = 0,
-          radians = (2 * Math.PI) / props.length;
-        values.forEach((d) => {
-          pathData.push([r, d]);
-          r += radians;
-        });
 
         const star_plot = base
           .append("g")
           .attr("class", "star_plot")
           .attr("transform", `translate(${star_tx},${star_ty})`);
 
+        const pathGen = d3.lineRadial();
+        let pathData = [];
+        let r = 0, lr = -Math.PI / 2, radians = (2 * Math.PI) / props.length;
+        values.forEach((d) => {
+          pathData.push([r, d]);
+          // draw guidelines
+          const x = radius * Math.cos(lr);
+          const y = radius * Math.sin(lr);
+          star_plot.append('line')
+            .attr('class', 'star-axis')
+            .attr('x1', 0)
+            .attr('y1', 0)
+            .attr('x2', x)
+            .attr('y2', y)
+            .attr('stroke', '#aaaa')
+            .attr('stroke-width', 8)
+            .attr('stroke-dasharray', '20')
+
+          // to next 
+          r += radians;
+          lr += radians;
+        });
+
         star_plot
           .append("path")
           .attr("class", "star-path")
           .attr("d", pathGen(pathData) + "Z")
           .attr('stroke', '#444')
-          .attr('stroke-width', 2)
+          .attr('stroke-width', 4)
           .attr('fill', color)
-          .attr('fill-opacity', 0.6)
+          .attr('fill-opacity', 0.4)
         this.star_cnt++;
       };
 
@@ -701,4 +717,11 @@ ul > li {
   margin: 0 8px 8px 0;
   display: inline-block;
 }
+
+// .star-axis {
+//   stroke: #ccc;
+//   stroke-width: 2px;
+//   stroke-dasharray: 4 5;
+// }
+
 </style>

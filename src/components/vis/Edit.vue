@@ -4,7 +4,7 @@
     <div class="edit-area" style="">
       <el-scrollbar class="horizon-scroll">
         <div v-for="(it, idx) in maps" :key="idx" class="edit-item" :style="{'border-color': it.last ? '#1ea7c0': '#e4ae40'}">
-          <div class="prop-box" style="">
+          <div class="prop-box" @click="lockMap($event, it, idx)" :style="{'background-color': it.locked ? '#ffffaa' : 'white'}">
             {{ it.prop }}
           </div>
           <div style="margin-top: 10px;">
@@ -30,7 +30,7 @@
 
 <script>
 export default {
-  props: ['encoding', 'lastProps'],
+  props: ['encoding', 'lastProps', 'lockedProps'],
   data() {
     return {
       maps: [],
@@ -43,6 +43,7 @@ export default {
     const group_props = this.$store.state.group_props;
     const mapped_props = [];
     const last_props = this.lastProps;
+    const locked_props = this.lockedProps;
     // const maps = this.$store.state.selected_img.mapper; 
     const img = this.$store.state.selected_img;
     for (let i = 0; i < img.d_list.length; i++) {
@@ -57,26 +58,37 @@ export default {
       }
       if (prop != 'none') {
         let in_last = false;
+        let in_locked = false;
         if (last_props.includes(prop)) in_last = true;
+        if (locked_props.includes(prop)) in_locked = true;
         this.maps.push({
           prop: prop,
           element: this.encoding[i].element,
           type: this.encoding[i].encoding,
-          last: in_last
+          last: in_last,
+          locked: in_locked
         });
         mapped_props.push(prop)
       }
     }
     const single_props = props.filter(d => !group_props.includes(d) && !mapped_props.includes(d));
     single_props.forEach(it => {
+      let in_locked = false;
+      if (locked_props.includes(it)) in_locked = true;
       this.maps.push({
         prop: it,
         element: "none",
         type: "none",
-        last: false
+        last: false,
+        locked: in_locked,
       });
     });
   },
+  methods: {
+    lockMap(event, map) {
+      map.locked = !map.locked;
+    }
+  }
 };
 </script>
 

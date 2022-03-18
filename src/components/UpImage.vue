@@ -18,7 +18,7 @@
       </el-upload>
       <el-button @click="searchSvg">search svg</el-button>
     </div>
-    <div style="height: 450px; padding-left: 3%">
+    <div style="height: 520px; padding-left: 3%">
       <el-scrollbar class="vertical-scroll">
         <div v-for="(obj, index) in previewElements" :key="index">
           <div style="display: inline-flex">
@@ -358,7 +358,7 @@ export default {
         dataProps: this.$store.state.props,
         dataTypes: this.$store.state.data_type,
         groups : this.$store.state.group_props,
-        svgsList: this.$store.state.all_svgs.slice(pos, pos + 2),
+        svgsList: this.$store.state.all_svgs.slice(pos, pos + 3),
         mapped: []
       };
       this.$axios({

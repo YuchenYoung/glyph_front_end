@@ -33,6 +33,11 @@ const routes = [
         component: () => import('../components/UpFile.vue')
       },
       {
+        path: 'preprocess',
+        name: 'preprocess',
+        component: () => import('../components/Preprocess.vue')
+      },
+      {
         path: 'image',
         name: 'image',
         component: () => import('../components/UpImage.vue')

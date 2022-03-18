@@ -3,17 +3,21 @@
     <el-col :span="18">
       <div id="visD3" style="height: 59%;" class="block-area">
         <p class="title">Visualization</p>
-        <el-button id="btn-update" @click="updateMaps">Update</el-button>
+        <el-button type="warning" plain class="btn-visop" id="btn-export" @click="exportGraph">Export</el-button>
+        <el-button type="warning" class="btn-visop" id="btn-update" @click="updateMaps" style="">Update</el-button>
         <div>
-          <ul style="display: inline-block;">
+          <ul>
             <el-scrollbar class="vertical-scroll">
-              <li v-for="it in img_obj.eles" :key="it" v-html="it" :style="img_obj.style"></li>
+              <li v-for="(it, index) in img_obj.eles" :key="index">
+                <div v-html="it" :style="img_obj.style"></div>
+                <span>Element {{ index }}</span>
+              </li>
             </el-scrollbar>
           </ul>
-          <graph :key="selectedKey" :best="true" v-on:selectedImgEncoding="getSelectedEncoding" style="width: 60%; margin-left: 10%; display: inline-block;"></graph>
+          <graph ref="mainGraph" :key="selectedKey" :best="true" v-on:selectedImgEncoding="getSelectedEncoding" style="width: 60%; margin-left: 5%; display: inline-block;"></graph>
         </div>
       </div>
-      <edit :key="editKey" :lastProps="last_props" :encoding="selectedEncoding" ref="edit" style="height: 34%"></edit>
+      <edit :key="editKey" :lastProps="last_props" :lockedProps="locked_props" :encoding="selectedEncoding" ref="edit" style="height: 34%"></edit>
     </el-col>
     <el-col :span="6">
       <alternative ref="alt" v-on:selectedImgChanged="getSelectedChanged"></alternative>
@@ -39,6 +43,7 @@ export default {
       selectedEncoding: [],
       img_obj: {},
       last_props: [],
+      locked_props: [],
     }
   },
   created() {
@@ -60,17 +65,27 @@ export default {
     },
     updateMaps() {
       const last_maps = this.$refs.edit.maps;
+      const img_num = this.img_obj.d_list.length;
       const _this = this;
       let new_maps = [];
       this.last_props = [];
+      this.locked_props = [];
       last_maps.forEach(it => {
-        if (it.prop != 'none' && it.element != 'none') {
+        if (it.prop != 'none') {
+          let cur_ele = it.element;
+          if (cur_ele == 'none') {
+            if (!it.locked) return;
+            cur_ele = img_num;
+          }
           if (it.prop.indexOf("group") >= 0) {
-            new_maps.push({is_group: true, prop: it.prop.split("group")[1], ele: it.element});
+            new_maps.push({is_group: true, prop: it.prop.split("group")[1], ele: cur_ele});
           } else {
-            new_maps.push({is_group: false, prop: it.prop, ele: it.element});
+            new_maps.push({is_group: false, prop: it.prop, ele: cur_ele});
           }
           this.last_props.push(it.prop);
+          if (it.locked) {
+            this.locked_props.push(it.prop);
+          }
         }
       });
       const pos = this.$store.state.selected_index;
@@ -99,43 +114,61 @@ export default {
           _this.selectedKey += 1;
           _this.$refs.alt.updateRender(this.$store.state.selected_index);
         })
-
       })
+    },
+    exportGraph() {
+      const content = this.$refs.mainGraph.$refs.mainGraph.innerHTML;
+      const fileName = `vis-${this.$store.state.theme}.svg`;
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
+      element.setAttribute('download', fileName);
+      element.style.display = 'none';
+      element.click();
     }
   }
 };
 </script>
 
 <style lang="less" scoped>
-#btn-update {
+.btn-visop {
   position: absolute;
   float: right;
   top: 30px;
-  right: 30%;
-  background-color: #e9b95a;
-  color: white;
+  right: 28%;
   padding: 10px 24px;
   font-size: 18px;
   font-family: "Lucida Sans Unicode";
 }
 
+#btn-update {
+  margin-right: 130px;
+  // background-color: #e9b95a;
+}
+
+
 ul {
   list-style: none;
   padding: 0;
   margin: 0;
-  width: 125px;
+  width: 220px;
   text-align: center;
   height: 300px;
-  margin-left: 50px;
+  margin-left: 40px;
+  display: inline-block;
+  text-align: left;
 }
 
 li {
   overflow: hidden;
+  display: inline-block;
+  text-align: center;
+}
+
+li div {
   background-color: #f4f5dc;
   border: 2px solid #e4ae40;
   border-radius: 6px;
   box-sizing: border-box;
   margin: 0 8px 8px 0;
-  display: inline-block;
 }
 </style>;

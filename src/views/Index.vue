@@ -75,7 +75,7 @@ export default {
 }
 
 .vertical-scroll .el-scrollbar__wrap {
-  width: 110%;
+  width: 115%;
   overflow-x: hidden;
 }
 

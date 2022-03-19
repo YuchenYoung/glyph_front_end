@@ -119,6 +119,14 @@ export default new Vuex.Store({
           }
         }
       };
+      const judgeGroupType = (props, types) => {
+        for (let i = 0; i < props.length; i++) {
+          if (types[props[i]] != "degree") {
+            return "value";
+          }
+        }
+        return 'degree';
+      };
 
       // data process
       const data = this.state.data;
@@ -128,6 +136,9 @@ export default new Vuex.Store({
           data.map((d) => d[it])
         );
       });
+      this.state.group_props.forEach((it, index) => {
+        this.state.data_type[`group${index}`] = judgeGroupType(it, this.state.data_type);
+      })
     },
 
     generate(state, view) {
@@ -138,11 +149,12 @@ export default new Vuex.Store({
     },
     resetData() {
       this.state.data_ready = false;
+      this.state.theme = "";
       this.state.data = [];
       this.state.props = [];
-      this.state.selected_props = [];
       this.state.data_type = {};
       this.state.data_range = {};
+      this.state.group_props = [];
     },
   },
   modules: {

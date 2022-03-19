@@ -5,11 +5,11 @@
         <p class="title">Visualization</p>
         <el-button type="warning" plain class="btn-visop" id="btn-export" @click="exportGraph">Export</el-button>
         <el-button type="warning" class="btn-visop" id="btn-update" @click="updateMaps" style="">Update</el-button>
-        <div>
+        <div style="margin-top: 12px;">
           <ul>
             <el-scrollbar class="vertical-scroll">
               <li v-for="(it, index) in img_obj.eles" :key="index">
-                <div v-html="it" :style="img_obj.style"></div>
+                <div v-html="it" style="width: 100px; height: 100px; box-sizing: content-box"></div>
                 <span>Element {{ index }}</span>
               </li>
             </el-scrollbar>
@@ -152,9 +152,9 @@ ul {
   list-style: none;
   padding: 0;
   margin: 0;
-  width: 220px;
+  width: 230px;
   text-align: center;
-  height: 300px;
+  height: 290px;
   margin-left: 40px;
   display: inline-block;
   text-align: left;
@@ -167,10 +167,15 @@ li {
 }
 
 li div {
-  background-color: #f4f5dc;
+  background-color: #ffffff;
   border: 2px solid #e4ae40;
   border-radius: 6px;
   box-sizing: border-box;
   margin: 0 8px 8px 0;
 }
+
+.el-button--warning.is-plain:hover {
+  background: #f7d694;
+}
+
 </style>;

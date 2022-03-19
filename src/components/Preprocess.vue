@@ -77,6 +77,7 @@ export default {
     console.log(this.$store.state);
     this.table_data = this.$store.state.data;
     this.data_ready = this.$store.state.data_ready;
+    this.groups = this.$store.state.group_props;
   },
   methods: {
     tableRowStyle(row) {
@@ -97,7 +98,7 @@ export default {
       console.log(this.groups);
       let group_props = [];
       this.groups.forEach(it => {
-        if (it.length > 0) group_props.push(it);
+        if (it.length > 1) group_props.push(it);
       });
       this.$store.state.group_props = group_props;
       this.$store.dispatch("generate", this);
@@ -144,4 +145,9 @@ export default {
 #btn-re {
   margin-left: 60px;
 }
+
+.el-button--warning.is-plain:hover {
+  background: #f7d694;
+}
+
 </style>

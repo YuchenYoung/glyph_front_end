@@ -2,13 +2,8 @@
   <div
     :id="div_id"
     ref="mainGraph"
-    style="
-      width: 92%;
-      margin-left: 4%;
-      border: 3px solid #e4ae40;
-      border-radius: 6px;
-      background: white;
-    "
+    class="graph-div"
+    style=""
   >
     <svg
       v-show="vis_display"
@@ -216,7 +211,7 @@ export default {
         .attr("width", svg_width)
         .attr("height", svg_height)
         .attr("viewBox", "0 0 1500 750")
-        .attr("transform", `translate(${svg_height * 0.08}, 0)`)
+        .attr("transform", `translate(${svg_height * 0.1}, 0)`)
       // const vis_width = +vis_svg.attr("width");
       // const vis_height = +vis_svg.attr("height");
       const vis_width = 1500;
@@ -714,19 +709,15 @@ export default {
 </style>
 
 <style lang="less" scoped>
-ul {
-  list-style: none;
-  padding: 0;
-}
 
-ul > li {
-  overflow: hidden;
-  background-color: #fff;
-  border: 1px solid #c0ccda;
+.graph-div {
+  // width: 92%;
+  margin-left: 4%;
+  border: 3px solid #e4ae40;
   border-radius: 6px;
-  box-sizing: border-box;
-  margin: 0 8px 8px 0;
-  display: inline-block;
+  background: white;
+  box-sizing: content-box;
+  text-align: left;
 }
 
 // .star-axis {

@@ -3,7 +3,7 @@
     <p class="title">Metaphoric Image Gallery</p>
     <el-button v-if="false" @click="testData">Test Data</el-button>
     <div id="svgMeasure" ref="svgSize"></div>
-    <div v-if="!dataReady" style="margin-left: 20px">
+    <div v-if="false" style="margin-left: 20px">
       <el-upload
         class="upload-demo"
         drag
@@ -35,7 +35,7 @@
               v-for="it in obj.eles"
               :key="it"
               v-html="it"
-              :style="obj.style"
+              style="width: 100px; height: 100px; box-sizing: content-box"
             ></li>
           </ul>
           <graph
@@ -629,7 +629,8 @@ ul {
 
 ul > li {
   overflow: hidden;
-  background-color: #f4f5dc;
+  // background-color: #f4f5dc;
+  background-color: #fff;
   border: 2px solid #e4ae40;
   border-radius: 6px;
   box-sizing: border-box;

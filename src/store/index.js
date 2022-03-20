@@ -168,7 +168,8 @@ export default new Vuex.Store({
         view.$router.push({path: '/index/image'});
       });
     },
-    resetData() {
+    resetData(state, view) {
+      // reset data variables
       this.state.data_ready = false;
       this.state.theme = "";
       this.state.data = [];
@@ -176,6 +177,22 @@ export default new Vuex.Store({
       this.state.data_type = {};
       this.state.data_range = {};
       this.state.group_props = [];
+      // reset image variables
+      this.state.all_svgs = [];
+      this.state.d_list = [];
+      this.state.paths_size = [];
+      this.state.img_type = [];
+      this.state.svg_width = 0;
+      this.state.svg_height = 0;
+      this.state.svg_list = [];
+      this.state.img_preview = [];
+      this.state.first_imgs = [];
+      this.state.img_ready = false;
+      this.state.mapper = {};
+      this.state.selected_index = 0;
+      this.state.selected_img = {};
+      // go back to upfile page
+      view.$router.push({path: '/index/data'});
     },
   },
   modules: {

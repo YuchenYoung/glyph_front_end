@@ -1,16 +1,6 @@
 <template>
-  <div
-    :id="div_id"
-    ref="mainGraph"
-    class="graph-div"
-    style=""
-  >
-    <svg
-      v-show="vis_display"
-      :id="svg_id"
-      class="svgs"
-      style="background: white"
-    ></svg>
+  <div :id="div_id" ref="mainGraph" class="graph-div">
+    <svg :id="svg_id" class="svgs" style="background: white"></svg>
   </div>
 </template>
 
@@ -21,7 +11,6 @@ export default {
   props: ["best", "old", "obj"],
   data() {
     return {
-      vis_display: false,
       glyph_display: false,
       path_size: [],
       mapper: {},
@@ -137,19 +126,9 @@ export default {
         if (it.element == 0) {
           if (axis == 0) {
             this.x_prop = it.prop;
-            encoding_res.push({
-              prop: it.prop,
-              element: 0,
-              encoding: 'x',
-            });
           }
           else if (axis == 1) {
             this.y_prop = it.prop;
-            encoding_res.push({
-              prop: it.prop,
-              element: 0,
-              encoding: 'y',
-            });
           }
           axis++;
           return;
@@ -189,13 +168,32 @@ export default {
       encoding_res.sort((a, b) => {
         return a.element - b.element;
       });
+      if (this.x_prop != '' && this.y_prop != '') {
+        if (this.x_prop.indexOf('Height') >= 0 || this.y_prop.indexOf('Width') >= 0) {
+          const tmp = this.x_prop;
+          this.x_prop = this.y_prop;
+          this.y_prop = tmp;
+        }
+      }
+      if (this.x_prop != '') {
+        encoding_res.push({
+          prop: this.x_prop,
+          element: 0,
+          encoding: 'x',
+        });
+      }
+      if (this.y_prop != '') {
+        encoding_res.push({
+          prop: this.y_prop,
+          element: 0,
+          encoding: 'y',
+        });
+      }
       //console.log(encoding_res);
       return encoding_res;
     },
-
     drawGraph(p_encoding) {
       // console.log(p_encoding);
-      this.vis_display = true;
       const graph_width = this.$refs.mainGraph.getBoundingClientRect().width;
       const _this = this;
       const encoding = p_encoding;
@@ -216,14 +214,15 @@ export default {
       // const vis_height = +vis_svg.attr("height");
       const vis_width = 1500;
       const vis_height = 750;
-      const margin = { top: 50, right: 100, bottom: 50, left: 100 };
+      const margin = { top: 25, right: 50, bottom: 25, left: 50 };
       const inner_width = vis_width - margin.left - margin.right;
       const inner_height = vis_height - margin.top - margin.bottom;
       const g = vis_svg
         .append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-      let stran = { tx: 0, ty: 0 };
+      // let dx = 0;
+      let dy = 0;
       let pos_x = 0, pos_y = 0, next_y = 0;
       const data = this.$store.state.data;
       const ds = this.img_obj.d_list;
@@ -289,7 +288,7 @@ export default {
           .append("path")
           .attr("d", d)
           .attr("fill", color)
-          .attr("transform", `translate(${stran.tx}, ${stran.ty})`);
+          .attr("transform", `translate(0, ${dy})`);
       };
 
       const render_alpha = (base, d, color, alpha) => {
@@ -298,42 +297,45 @@ export default {
       };
 
       const render_size = (base, d, size, fill, scale) => {
+        const midX = size.midX, midY = size.midY, height = size.height;
+        const tranx = midX * (1 - scale);
+        const trany = midY * (1 - scale) + dy + (scale - 1) * height / 2;
         base
           .append("path")
           .attr("d", d)
           .attr("fill", fill)
           .attr(
             "transform",
-            `translate(${stran.tx}, ${stran.ty}),scale(${scale}, ${scale})`
+            `translate(${tranx}, ${trany}),scale(${scale}, ${scale})`
           );
-        stran.tx += (scale - 1) * 0.5 * size.width;
-        stran.ty += (scale - 1) * 0.5 * size.height;
+        dy += (scale - 1) * height;
       };
 
-      const render_length = (base, d, size, fill, length) => {
+      const render_length = (base, d, size, fill, scale) => {
+        const midX = size.midX;
+        const tranx = midX * (1 - scale);
         base
           .append("path")
           .attr("d", d)
           .attr("fill", fill)
           .attr(
             "transform",
-            `translate(${stran.tx}, ${stran.ty}),scale(${length}, ${1})`
+            `translate(${tranx}, ${dy}),scale(${scale}, ${1})`
           );
-        stran.tx += (length - 1) * 0.5 * size.width;
       };
 
       const render_number = (base, d, size, fill, num) => {
-        // console.log(num);
-        const sw = size.height;
+        const height = size.height;
+        let semi_dy = dy;
         for (let k = 0; k < num; k++) {
-          const trany = stran.ty + k * sw;
+          if (k > 0) semi_dy += height;
           base
             .append("path")
             .attr("d", d)
             .attr("fill", fill)
-            .attr("transform", `translate(${stran.tx}, ${trany})`);
+            .attr("transform", `translate(0, ${semi_dy})`);
         }
-        stran.ty += (num - 1) * sw;
+        dy += (num - 1) * height;
       };
 
       const render_simple = (base, d, size, fill) => {
@@ -365,8 +367,7 @@ export default {
           pie_data_array.push({ value: datum[it] });
         });
         const pie_data = pie(pie_data_array);
-        const pie_tx = size.width * 0.5,
-          pie_ty = size.height * 0.5;
+        const pie_tx = size.midX, pie_ty = size.midY + dy;
         const arc = d3
           .arc()
           .innerRadius(0)
@@ -416,11 +417,11 @@ export default {
         const value_min = Math.min.apply(null, values);
         let pie_colors = [];
         for (let i = 0; i < values.length; i++) {
-          const alpha = parseInt(55 + 200 * (values[i] - value_min) / (value_max - value_min));
+          const alpha = parseInt(100 + 150 * (values[i] - value_min) / (value_max - value_min));
           pie_colors.push(color + ("00" + alpha.toString(16)).slice(-2));
         }
         const pie_data = pie(pie_data_array);
-        const pie_tx = size.width * 0.5, pie_ty = size.height * 0.5;
+        const pie_tx = size.midX, pie_ty = size.midY + dy;
         const arc = d3
           .arc()
           .innerRadius(0)
@@ -451,8 +452,7 @@ export default {
       };
 
       const render_star = (base, d, size, color, props, datum) => {
-        const star_tx = size.midX;
-        const star_ty = size.midY;
+        const star_tx = size.midX, star_ty = size.midY + dy;
         const radius = Math.min(size.width, size.height) / 2;
         let values = [];
         props.forEach((it) => {
@@ -503,7 +503,7 @@ export default {
       };
 
       const render_flower = (base, d, size, color, props, datum) => {
-        const r = Math.max(size.width, size.height);
+        // const r = Math.max(size.width, size.height);
         let values = [],
           scales = [],
           fills = [],
@@ -515,22 +515,27 @@ export default {
         const value_min = Math.min.apply(null, values);
         for (let i = 0; i < values.length; i++) {
           scales.push(
-            0.5 + (1.5 * (values[i] - value_min)) / (value_max - value_min)
+            0.3 + 0.4 * (values[i] - value_min) / (value_max - value_min)
           );
-          const alpha = parseInt(55 + (200 * i) / values.length);
+          const alpha = parseInt(100 + (150 * i) / values.length);
           fills.push(color + ("00" + alpha.toString(16)).slice(-2));
           rotates.push((180 / (values.length - 1)) * i);
         }
+        const midX = size.midX, midY = size.midY;
+        const eleW = size.width, eleH = size.height;
+        const rotX = midX - eleW / 2, rotY = midY;
         for (let i = 0; i < values.length; i++) {
+          const tranx = (1- scales[i]) * midX + scales[i] / 2 * eleW;
+          const trany = 0.5 * midY + dy - eleH / 2 + 0.5 * eleW;
+          const transform = `translate(${tranx}, ${trany}), scale(${scales[i]}, 0.5), rotate(${-rotates[i]}, ${rotX}, ${rotY})`;
+          console.log(transform);
           base
             .append("path")
             .attr("d", d)
             .attr("fill", fills[i])
-            .attr(
-              "transform",
-              `translate(${r}, ${r}), rotate(${rotates[i]}), scale(${scales[i]}, 1)`
-            );
+            .attr("transform", transform);
         }
+        dy += (0.5 * eleW - eleH / 2);
       };
 
       const render_glyph_transform = (datum, glyph, width) => {
@@ -556,16 +561,32 @@ export default {
             "transform",
             `translate(${glyph_x},${glyph_y}),scale(${scale},${scale})`
           );
-        pos_x += width + stran.tx;
-        next_y = Math.max(next_y, pos_y + height);
+        pos_x += width * 1.5;
+        next_y = pos_y + 1.5 * height;
       };
 
-      const render_data = (data) => {
-        const glyph = g.append("g").attr("class", `glyph-${this.index}`);
+      const render_data = (data, glyph_width) => {
+        
         const path_size = _this.img_obj.path_size;
-        for (let i = 1; i < ds.length; i++) {
-          stran.tx = 0;
-          stran.ty = 0;
+        let render_series = [];
+        for (let i = 1; i < path_size.length; i++) {
+          render_series.push({
+            idx: i,
+            left: path_size[i].left,
+            top: path_size[i].top
+          });
+        }
+        render_series.sort((a, b) => {
+          if (Math.abs(a.top - b.top) < 1e-6) {
+            return a.left - b.left;
+          }
+          return a.top - b.top;
+        });
+        const glyph = g.append("g").attr("class", `glyph-${this.index}`);
+        render_glyph_transform(data, glyph, glyph_width);
+        dy = 0;
+        for (let ix = 0; ix < render_series.length; ix++) {
+          let i = render_series[ix].idx;
           let pos = encoding.findIndex((d) => d.element == i);
           // console.log(encoding);
           let encoding_type = encoding[pos]["encoding"];
@@ -583,16 +604,16 @@ export default {
             const mapped_value = this.dataRangeMapping(
               data[encoding[pos]["prop"]],
               encoding[pos]["prop"],
-              0.5,
-              2
+              0.7,
+              1.3
             );
             render_size(glyph, ds[i], path_size[i], fills[i], mapped_value);
           } else if (encoding_type == "length") {
             const mapped_value = this.dataRangeMapping(
               data[encoding[pos]["prop"]],
               encoding[pos]["prop"],
-              0.5,
-              2
+              0.7,
+              1.3
             );
             render_length(glyph, ds[i], path_size[i], fills[i], mapped_value);
           } else if (encoding_type == "color") {
@@ -603,8 +624,8 @@ export default {
               this.dataRangeMapping(
                 data[encoding[pos]["prop"]],
                 encoding[pos]["prop"],
-                0,
-                255
+                50,
+                200
               )
             );
             render_alpha(glyph, ds[i], fills[i], mapped_value);
@@ -646,12 +667,13 @@ export default {
             );
           }
         }
-        render_glyph_transform(data, glyph, 120);
+        
       };
 
       const render = (data) => {
+        const glyph_width = data.length > 15 ? 120 : 160;
         data.forEach((it) => {
-          render_data(it);
+          render_data(it, glyph_width);
         });
       };
 

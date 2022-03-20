@@ -169,10 +169,6 @@ export default {
     filterContent(obj, tag, svg_obj) {
       // console.log(obj);
       // console.log(tag);
-      if (tag == 'path') {
-        console.log(obj);
-        console.log(obj._d);
-      }
       const invalid_tags = ['title'];
       if (invalid_tags.includes(tag)) {
         return;
@@ -616,7 +612,7 @@ export default {
         return "linear_horizon";
       } else if (size.height / size.width >= 3.5) {
         return "linear_vertical";
-      } else if (size.height / size.width <= 1.5 && size.width / size.height <= 1.5) {
+      } else if (size.height / size.width <= 3 && size.width / size.height <= 3) {
         return "square";
       } else {
         return "rect";

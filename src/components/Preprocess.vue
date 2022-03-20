@@ -30,7 +30,7 @@
             </el-option>
           </el-select>
         </div>
-        <el-button @click="addGroup" style="margin-top: 5px; background: #ffe3b1;">Add Group</el-button>
+        <el-button type="warning" plain @click="addGroup" style="margin-top: 5px;">Add Group</el-button>
       </div>
       <el-button type="warning" class="btn-options" id="btn-ge" @click="generate">Generate</el-button>
       <el-button type="warning" class="btn-options" plain id="btn-re" @click="resetData">Re-upload</el-button>
@@ -92,7 +92,7 @@ export default {
     },
     resetData() {
       this.groups = [];
-      this.$store.dispatch("resetData");
+      this.$store.dispatch("resetData", this);
     },
     generate() {
       console.log(this.groups);
@@ -138,7 +138,7 @@ export default {
   // font-size: 20px;
   width: 120px;
   height: 42px;
-  margin-top: 16px;
+  margin-top: 22px;
   font-size: 18px;
 }
 

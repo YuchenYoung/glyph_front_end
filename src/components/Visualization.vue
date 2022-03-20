@@ -56,6 +56,7 @@ export default {
       this.$store.state.selected_img = this.$store.state.img_preview[+index];
       this.img_obj = this.$store.state.selected_img;
       this.last_props = [];
+      this.locked_props = [];
       this.selectedKey += 1;
     },
     getSelectedEncoding(obj) {

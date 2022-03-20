@@ -4,7 +4,7 @@
     <div style="width: 100%; height: 520px;">
       <el-scrollbar class="vertical-scroll">
         <div v-for="(it, index) in objs" :key="index" @click="changeBest($event, index)" style="width: 86%; margin-left: 2%; margin-top: 10px">
-          <el-popover placement="left" width="100" trigger="hover" close-delay="100">
+          <el-popover placement="left" width="100" trigger="hover">
             <!-- <graph :best="false" :old="true" :obj="firstImg(index)"></graph> -->
             <div v-html="it.eles[0]" style="width: 100px; height: 100px; box-sizing: content-box"></div>
             <graph :best="false" :old="false" :obj="it" ref="altGraph" :key="render_keys[index]" slot="reference" style="cursor: pointer;"></graph>

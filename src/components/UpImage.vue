@@ -157,22 +157,22 @@ export default {
         // this.$store.state.theme = this.img_content;
         res.data.svgs.forEach(it => {
           let obj = this.formatSvg(it);
-          // console.log('yyyyyyyyyyyyyyyyyyyyy');
-          // console.log(obj);
-          //console.log(obj.has_color);
           if (obj.has_color && obj.svgs.length >= 4 && obj.svgs.length <= 9) {
             this.uploadSegmentation(obj);
             this.$store.state.all_svgs.push(obj.svgs);
           }
         });
         //console.log(this.previewElements);
-        // console.log("tttttttttt");
         this.getDataMap();
       });
     },
     filterContent(obj, tag, svg_obj) {
       // console.log(obj);
       // console.log(tag);
+      if (tag == 'path') {
+        console.log(obj);
+        console.log(obj._d);
+      }
       const invalid_tags = ['title'];
       if (invalid_tags.includes(tag)) {
         return;
@@ -210,6 +210,7 @@ export default {
         return;
       }
       if (!this.checkDAvailable(path_obj.d)) {
+        print(path_obj.d);
         return;
       }
       if (keys.includes('_style')) {
@@ -240,13 +241,7 @@ export default {
       svg_obj.paths.push(path_obj);
     },
     checkDAvailable(d) {
-      const invalidChars = ['A', 'a', 'U', 'u']
-      for (let i = 0; i < d.length; i++) {
-        if (invalidChars.includes(d.charAt(i))) {
-          return false;
-        }
-      }
-      return true;
+      return d.indexOf('NaN') < 0 && d.indexOf('undefined') < 0
     },
     simpleImg() {
       let img_urls = [
@@ -428,10 +423,14 @@ export default {
       mid.split("M").forEach((it) => {
         ori_paths.push({"d": "M" + it});
       });
-      let filter_paths = this.filterSepSvgs(ori_paths, retval.width, retval.height, true);
       const radial = this.judgeRadial(filter_paths, retval.width, retval.height);
+      let filter_paths = [];
+      // let filter_paths = this.filterSepSvgs(ori_paths, retval.width, retval.height, true);
+      // const radial = this.judgeRadial(filter_paths, retval.width, retval.height);
       if (!radial) {
         filter_paths = this.filterSepSvgs(ori_paths, retval.width, retval.height, false);
+      } else {
+        filter_paths = ori_paths;
       }
       //console.log(radial ? "radial" : "non-radial");
       // console.log(filter_ds.length);
@@ -455,10 +454,14 @@ export default {
       retval.width = svg_obj.width;
       retval.height = svg_obj.height;
       let ori_paths = svg_obj.paths;
-      let filter_paths = this.filterSepSvgs(ori_paths, retval.width, retval.height, true);
+      let filter_paths = ori_paths;
+      // let filter_paths = this.filterSepSvgs(ori_paths, retval.width, retval.height, true);
       const radial = this.judgeRadial(filter_paths, retval.width, retval.height);
-      if (!radial) {
-        filter_paths = this.filterSepSvgs(ori_paths, retval.width, retval.height, false);
+      if (this.$store.state.theme != "pokemon") {
+        filter_paths = this.filterSepSvgs(ori_paths, retval.width, retval.height, true);
+        if (!radial) {
+          filter_paths = this.filterSepSvgs(ori_paths, retval.width, retval.height, false);
+        }
       }
       // console.log(radial ? "radial" : "non-radial");
       retval.fill = [''].concat(filter_paths.map(d => d.fill));
@@ -579,6 +582,9 @@ export default {
       return path_list;
     },
     judgeRadial(path_list, img_w, img_h) {
+      if (this.$store.state.theme == 'pokemon') {
+        return true;
+      }
       let centers = [];
       let max_center = 1;
       for (let i = 0; i < path_list.length; i++) {

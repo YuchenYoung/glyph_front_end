@@ -10,7 +10,7 @@
         :row-style="tableRowStyle"
       >
         <el-table-column
-          v-for="it in props"
+          v-for="it in tableProps"
           :key="it"
           :prop="it"
           :label="it"
@@ -53,8 +53,8 @@ export default {
     tableData() {
       return this.$store.state.data;
     },
-    props() {
-      return this.$store.state.props;
+    tableProps() {
+      return this.$store.state.table_props;
     },
     noGroupProps() {
       return (idx) => {
@@ -63,7 +63,7 @@ export default {
           if (i == idx) continue;
           used_props = used_props.concat(this.groups[i]);
         }
-        let all_props = JSON.parse(JSON.stringify(this.$store.state.props));
+        let all_props = JSON.parse(JSON.stringify(this.$store.state.table_props));
         for (let i = all_props.length - 1; i >= 0; i--) {
           if (used_props.includes(all_props[i])) {
             all_props.splice(i, 1);

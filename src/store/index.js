@@ -15,6 +15,8 @@ export default new Vuex.Store({
     props: [],
     group_props: [],
     theme: "",
+    similarity: [],
+    prop_similarity: {},
 
     //img view
     all_svgs: [],
@@ -143,9 +145,28 @@ export default new Vuex.Store({
 
     generate(state, view) {
       this.dispatch("dataProcess");
-      // console.log(state);
+      console.log(state);
       // console.log(view);
-      view.$router.push({path: '/index/image'});
+      view.$axios({
+        method: "post",
+        url: "/mapping/similarity/",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        data: {
+          theme: this.state.theme,
+          dataProps: this.state.props,
+          dataTypes: this.state.data_type,
+          groups: this.state.group_props
+        },
+      }).then(res => {
+        console.log('qqqqqqqqqqqqqqqqqqqqqqqqqqqqqww');
+        console.log(res.data);
+        this.state.props = res.data.props;
+        this.state.similarity = res.data.similarity;
+        this.state.prop_similarity = res.data.dic;
+        view.$router.push({path: '/index/image'});
+      });
     },
     resetData() {
       this.state.data_ready = false;

@@ -51,6 +51,7 @@ export default {
         }
         const props = Object.keys(tmp_data[0]);
         this.$store.state.props = props;
+        this.$store.state.table_props = JSON.parse(JSON.stringify(props)); 
         this.$router.push({path: '/index/preprocess'});
       };
       return false;

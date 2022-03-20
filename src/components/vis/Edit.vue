@@ -61,6 +61,7 @@ export default {
     const locked_props = this.lockedProps;
     const data_type = this.$store.state.data_type;
     const img = this.$store.state.selected_img;
+    const prop_similarity = this.$store.state.prop_similarity;
     for (let i = 0; i < img.d_list.length; i++) {
       this.elements.push(i);
     }
@@ -83,6 +84,7 @@ export default {
         this.maps.push({
           prop: prop,
           props: props,
+          similarity: prop_similarity[prop],
           element: this.encoding[i].element,
           type: this.encoding[i].encoding,
           isGroup: this.encoding[i].is_group,
@@ -104,6 +106,7 @@ export default {
       this.maps.push({
         prop: it,
         props: [],
+        similarity: prop_similarity[it],
         element: "none",
         type: "none",
         last: false,
@@ -114,6 +117,9 @@ export default {
         dtype: data_type[it]
       });
     });
+    this.maps.sort((a, b) => {
+      return b['similarity'] - a['similarity']
+    })
     this.maps.forEach(it => {
       it.dis_prop = it.prop;
       if (it.prop.length > 28) {

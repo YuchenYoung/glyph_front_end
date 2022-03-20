@@ -355,8 +355,8 @@ export default {
       }
       let up_data = {
         content: this.$store.state.theme,
-        // content: "burger",
         dataProps: this.$store.state.props,
+        similarity: this.$store.state.similarity,
         dataTypes: this.$store.state.data_type,
         groups : this.$store.state.group_props,
         svgsList: this.$store.state.all_svgs.slice(pos, pos + 3),

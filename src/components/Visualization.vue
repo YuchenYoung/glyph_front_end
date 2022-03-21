@@ -17,7 +17,7 @@
           <graph ref="mainGraph" :key="selectedKey" :best="true" v-on:selectedImgEncoding="getSelectedEncoding" style="width: 60%; margin-left: 5%; display: inline-block;"></graph>
         </div>
       </div>
-      <edit :key="editKey" :lastProps="last_props" :lockedProps="locked_props" :encoding="selectedEncoding" ref="edit" style="height: 34%"></edit>
+      <edit :key="editKey" :lockedProps="locked_props" :encoding="selectedEncoding" ref="edit" style="height: 34%"></edit>
     </el-col>
     <el-col :span="6">
       <alternative ref="alt" :key="altKey" v-on:selectedImgChanged="getSelectedChanged"></alternative>
@@ -43,7 +43,6 @@ export default {
       altKey: 0,
       selectedEncoding: [],
       img_obj: {},
-      last_props: [],
       locked_props: [],
     }
   },
@@ -55,7 +54,6 @@ export default {
       this.$store.state.selected_index = +index;
       this.$store.state.selected_img = this.$store.state.img_preview[+index];
       this.img_obj = this.$store.state.selected_img;
-      this.last_props = [];
       this.locked_props = [];
       this.selectedKey += 1;
     },
@@ -70,13 +68,13 @@ export default {
       const img_num = this.img_obj.d_list.length;
       const _this = this;
       let new_maps = [];
-      this.last_props = [];
-      this.locked_props = [];
       last_maps.forEach(it => {
         if (it.prop != 'none') {
           let cur_ele = it.element;
+          if (!it.selected && !it.locked) {
+            return;
+          }
           if (cur_ele == 'none') {
-            if (!it.locked) return;
             cur_ele = img_num;
           }
           if (it.prop.indexOf("group") >= 0) {
@@ -84,8 +82,7 @@ export default {
           } else {
             new_maps.push({is_group: false, prop: it.prop, ele: cur_ele});
           }
-          this.last_props.push(it.prop);
-          if (it.locked) {
+          if (it.selected && !this.locked_props.includes(it.prop)) {
             this.locked_props.push(it.prop);
           }
         }

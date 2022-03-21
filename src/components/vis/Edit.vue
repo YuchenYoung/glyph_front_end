@@ -1,12 +1,12 @@
 <template>
   <div class="block-area" style="text-align: center">
-    <p class="title">Edit</p>
+    <p class="title" style="margin-bottom: 6px;">Edit</p>
     <div class="edit-area" style="">
       <el-scrollbar class="horizon-scroll">
-        <div v-for="(it, idx) in maps" :key="idx" class="edit-item" :style="{'border-color': it.last ? '#1ea7c0': '#e4ae40'}">
+        <div v-for="(it, idx) in maps" :key="idx" class="edit-item" :style="{'border-color': it.locked ? '#e56240': '#e4ae40'}">
           <el-tooltip class="item" effect="light" :disabled="!it.toTip" :content="it.tip" placement="top">
-            <div class="prop-box" @click="lockMap($event, it, idx)" :style="{'background-color': it.locked ? '#e4ae40' : 'white'}">
-              <div class="prop-text" :style="{'color': it.locked ? 'white' : 'black'}">
+            <div class="prop-box" @click="selectMap($event, it, idx)" :style="{'background-color': it.selected ? '#e4ae40' : 'white'}">
+              <div class="prop-text" :style="{'color': it.selected ? 'white' : 'black'}">
                 <span>{{ it.dis_prop }}</span>
               </div>
               <svg v-if="it.dtype != 'category'" width="32" height="32" viewBox="0 0 39 39" class="type-icon" xmlns="http://www.w3.org/2000/svg">
@@ -22,7 +22,7 @@
             <div style="width: 72px; display: inline-block;">
               <span style="font-size: 15px">Element</span>
             </div>
-            <el-select v-model="it.element" size="mini" style="width: 90px; margin-left: 4px">
+            <el-select v-model="it.element" size="mini" @change="changeMap($event, it)" style="width: 90px; margin-left: 4px">
               <el-option v-for="item in elements" :key="item" :label="item" :value="item">
               </el-option>
             </el-select>
@@ -57,7 +57,7 @@ export default {
     const props = this.$store.state.props;
     const groups = this.$store.state.group_props;
     const mapped_props = [];
-    const last_props = this.lastProps;
+    // const last_props = this.lastProps;
     const locked_props = this.lockedProps;
     const data_type = this.$store.state.data_type;
     const img = this.$store.state.selected_img;
@@ -77,9 +77,9 @@ export default {
         group_cnt++;
       }
       if (prop != 'none') {
-        let in_last = false;
+        // let in_last = false;
         let in_locked = false;
-        if (last_props.includes(prop)) in_last = true;
+        // if (last_props.includes(prop)) in_last = true;
         if (locked_props.includes(prop)) in_locked = true;
         this.maps.push({
           prop: prop,
@@ -90,7 +90,7 @@ export default {
           isGroup: this.encoding[i].is_group,
           toTip: this.encoding[i].is_group,
           tip: tip,
-          last: in_last,
+          selected: false,
           locked: in_locked,
           dtype: data_type[prop]
         });
@@ -109,7 +109,7 @@ export default {
         similarity: prop_similarity[it],
         element: "none",
         type: "none",
-        last: false,
+        selected: false,
         isGroup: false,
         toTip: false,
         tip: "",
@@ -117,6 +117,23 @@ export default {
         dtype: data_type[it]
       });
     });
+    for (let i = 0; i < groups.length; i++) {
+      if (mapped_props.includes(`group${i}`)) continue;
+      let name = `group${i}`
+      this.maps.push({
+        prop: name,
+        props: groups[i],
+        similarity: prop_similarity[name],
+        element: "none",
+        type: "none",
+        selected: false,
+        isGroup: true,
+        toTip: true,
+        tip: groups[i].join(', '),
+        locked: locked_props.includes(name),
+        dtype: data_type[name]
+      });
+    }
     this.maps.sort((a, b) => {
       return b['similarity'] - a['similarity']
     })
@@ -130,8 +147,11 @@ export default {
     });
   },
   methods: {
-    lockMap(event, map) {
-      map.locked = !map.locked;
+    selectMap(event, map) {
+      map.selected = !map.selected;
+    },
+    changeMap(val, obj) {
+      obj.selected = true;
     }
   }
 };
@@ -153,7 +173,7 @@ export default {
   width: 180px; 
   margin-right: 10px; 
   display: inline-block; 
-  border: 2px solid #e4ae40; 
+  border: 3px solid #e4ae40; 
   border-radius: 6px;
 }
 

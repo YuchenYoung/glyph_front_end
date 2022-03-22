@@ -27,7 +27,7 @@
             <div style="width: 72px; display: inline-block;">
               <span style="font-size: 15px">Element</span>
             </div>
-            <el-select v-model="it.element" size="mini" @change="changeMap($event, it)" style="width: 90px; margin-left: 4px">
+            <el-select v-model="it.element" size="mini" @change="changeMap($event, it, true)" style="width: 90px; margin-left: 4px">
               <el-option v-for="item in elements" :key="item" :label="item" :value="item">
               </el-option>
             </el-select>
@@ -36,7 +36,7 @@
             <div style="width: 72px; display: inline-block;">
               <span style="font-size: 15px">Encoding</span>
             </div>
-            <el-select v-model="it.type" size="mini" style="width: 90px; margin-left: 4px">
+            <el-select v-model="it.type" size="mini" :disabled="it.element == 'none'" @change="changeMap($event, it, false)" style="width: 90px; margin-left: 4px">
               <el-option v-for="item in encodings" :key="item" :label="item" :value="item">
               </el-option>
             </el-select>
@@ -53,6 +53,7 @@ export default {
   props: ['encoding', 'lastProps', 'lockedProps'],
   data() {
     return {
+      remap: false,
       maps: [],
       elements: ['none'],
       encodings: ['none', 'x', 'y', 'number', 'color', 'alpha', 'length', 'size', 'flower', 'pie', 'heatmap', 'star']
@@ -155,13 +156,17 @@ export default {
     selectMap(event, map) {
       map.selected = !map.selected;
     },
-    changeMap(val, obj) {
+    changeMap(val, obj, change_ele) {
       obj.selected = true;
+      if (change_ele) {
+        this.remap = true;
+        obj.type = 'none';
+      }
     },
     iconType(dtype) {
       if (dtype == 'category') return 'category';
-      if (dtype == 'degree') return 'degree'
-      return 'number'
+      if (dtype == 'degree') return 'degree';
+      return 'number';
     }
   }
 };
@@ -218,5 +223,9 @@ export default {
 <style lang="less">
 .el-tooltip__popper.is-light {
   max-width: 200px;
+}
+
+.el-input--mini .el-input__inner {
+  padding-left: 12px;
 }
 </style>

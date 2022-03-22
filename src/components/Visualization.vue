@@ -63,10 +63,20 @@ export default {
       this.selectedEncoding = obj;
       this.editKey += 1;
     },
+    reRenderPage() {
+      this.img_obj = this.$store.state.selected_img;
+      this.$nextTick(() => {
+        this.selectedKey += 1;
+        this.altKey += 1;
+        // _this.$refs.alt.updateRender(this.$store.state.selected_index);
+      });
+    },
     updateMaps() {
       const last_maps = this.$refs.edit.maps;
       const img_num = this.img_obj.d_list.length;
       const _this = this;
+      const pos = this.$store.state.selected_index;
+      this.$store.state.img_preview[pos].encoded = {};
       let new_maps = [];
       last_maps.forEach(it => {
         if (it.prop != 'none') {
@@ -76,6 +86,10 @@ export default {
           }
           if (cur_ele == 'none') {
             cur_ele = img_num;
+          } else {
+            if (it.type != 'none') {
+              this.$store.state.img_preview[pos].encoded[it.prop] = it.type;
+            }
           }
           if (it.prop.indexOf("group") >= 0) {
             new_maps.push({is_group: true, prop: it.prop.split("group")[1], ele: cur_ele});
@@ -87,7 +101,11 @@ export default {
           }
         }
       });
-      const pos = this.$store.state.selected_index;
+      if (!this.$refs.edit.remap) {
+        this.$store.state.selected_img = this.$store.state.img_preview[pos];
+        this.reRenderPage();
+        return;
+      }
       let up_data = {
         content: this.$store.state.theme,
         dataProps: this.$store.state.props,
@@ -109,12 +127,7 @@ export default {
         _this.$store.state.img_preview[pos].mapper = res.data.mappers[0];
         _this.$store.state.img_preview[pos].score = res.data.scores[0];
         _this.$store.state.selected_img = _this.$store.state.img_preview[pos];
-        _this.img_obj = _this.$store.state.selected_img;
-        _this.$nextTick(() => {
-          _this.selectedKey += 1;
-          _this.altKey += 1;
-          // _this.$refs.alt.updateRender(this.$store.state.selected_index);
-        })
+        this.reRenderPage();
       })
     },
     exportGraph() {

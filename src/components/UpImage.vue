@@ -372,6 +372,7 @@ export default {
           this.$store.state.img_preview[pos + i].times = res.data.times[i].concat([this.deal_time[pos + i]]);
           this.$store.state.img_preview[pos + i].info =
             this.$store.state.img_preview[pos + i].times.join("--");
+          this.$store.state.img_preview[pos + i].encoded = {};
           // display image' color
           // this.updateDisElements(pos + i);
         }

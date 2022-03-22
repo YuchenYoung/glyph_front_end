@@ -133,10 +133,37 @@ export default {
           axis++;
           return;
         }
+        if (Object.prototype.hasOwnProperty.call(this.img_obj.encoded, it.prop)) {
+          const encoding = this.img_obj.encoded[it.prop];
+          if (it.is_group) {
+            if (encoding == 'pie' || encoding == 'heatmap' || encoding == 'star' || encoding == 'flower') {
+              encoding_res.push({
+                is_group: true,
+                props: it.group,
+                prop: it.prop,
+                element: it.element,
+                encoding: encoding
+              });
+            }
+            return;
+          } else {
+            const dtype = data_type[it.prop];
+            if (dtype != 'category' && (encoding == 'length' || encoding == 'size')) {
+              encoding_res.push({
+                is_group: false,
+                prop: it.prop,
+                element: it.element,
+                encoding: encoding
+              });
+              return;
+            }
+          }
+        }
         if (it.is_group) {
           encoding_res.push({
             is_group: true,
             props: it.group,
+            prop: it.prop,
             element: it.element,
             encoding: this.getEncodingType(
               this.getGroupType(it.group),
@@ -517,7 +544,7 @@ export default {
         const value_min = Math.min.apply(null, values);
         for (let i = 0; i < values.length; i++) {
           scales.push(
-            0.3 + 0.4 * (values[i] - value_min) / (value_max - value_min)
+            0.4 + 0.3 * (values[i] - value_min) / (value_max - value_min)
           );
           const alpha = parseInt(100 + (150 * i) / values.length);
           fills.push(color + ("00" + alpha.toString(16)).slice(-2));

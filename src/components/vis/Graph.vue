@@ -214,7 +214,7 @@ export default {
       // const vis_height = +vis_svg.attr("height");
       const vis_width = 1500;
       const vis_height = 750;
-      const margin = { top: 25, right: 50, bottom: 25, left: 50 };
+      const margin = { top: 25, right: 50, bottom: 25, left: 80 };
       const inner_width = vis_width - margin.left - margin.right;
       const inner_height = vis_height - margin.top - margin.bottom;
       const g = vis_svg
@@ -261,7 +261,8 @@ export default {
             .range([0, inner_width])
             .nice();
           const xAxis = d3.axisBottom(xScale).tickSize(inner_height);
-          g.append("g").call(xAxis);
+          const xAxisGroup = g.append('g').call(xAxis).attr('class', 'x-axis')
+          xAxisGroup.selectAll('.domain').remove();
         }
         if (x_prop != '' && y_prop != '') {
           yValue = (datum) => {
@@ -273,9 +274,10 @@ export default {
             .range([0, inner_height])
             .nice();
           const yAxis = d3.axisLeft(yScale).tickSize(-inner_width);
-          g.append("g").call(yAxis);
+          const yAxisGroup = g.append('g').call(yAxis).attr('class', 'y-axis')
+          yAxisGroup.selectAll('.domain').remove();
         }
-        g.selectAll(".tick text").attr("font-size", "1.5em");
+        // g.selectAll(".tick text").attr("font-size", "1.5em");
         encoding.forEach(it => {
           if (!it.is_group && data_type[it.prop] == "category") {
             category_init(it.prop, data.map(d => d[it.prop]))
@@ -646,8 +648,33 @@ export default {
         });
       };
 
+      const render_final = () => {
+        if (x_prop != '' && y_prop != '') {
+          g.append('text')
+            .attr('y', inner_height + 60)
+            .attr('x', inner_width / 2)
+            .attr('fill', '#333333')
+            .attr('font-size', '26px')
+            .attr('text-anchor', 'middle')
+            .text(x_prop);
+          g.append('text')
+            .attr('transform', `rotate(-90)`)
+            .attr('x', -inner_height / 2)
+            .attr('y', -50)
+            .attr('fill', '#333333')
+            .attr('font-size', '26px')
+            .attr('text-anchor', 'middle')
+            .text(y_prop);
+        }
+        d3.selectAll('.tick text').attr('font-size', '20px')
+        d3.selectAll('.tick line').attr('stroke', '#838378')
+        d3.selectAll('.x-axis .tick text').attr('transform', 'translate(0, 8)');
+        d3.selectAll('.y-axis .tick text').attr('transform', 'translate(-5, 0)');
+      } 
+
       render_init(data);
       render(data);
+      render_final();
     },
     generateGraph() {
       this.to_generate = false;
@@ -692,12 +719,6 @@ export default {
   },
 };
 </script>
-
-<style lang="less">
-.tick > line {
-  stroke: #c0c0bb;
-}
-</style>
 
 <style lang="less" scoped>
 

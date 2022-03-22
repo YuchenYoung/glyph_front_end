@@ -222,7 +222,7 @@ export default {
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
       // let dx = 0;
-      let dy = 0;
+      // let dy = 0;
       let pos_x = 0, pos_y = 0, next_y = 0;
       const data = this.$store.state.data;
       const ds = this.img_obj.d_list;
@@ -283,7 +283,7 @@ export default {
         })
       };
 
-      const render_color = (base, d, color) => {
+      const render_color = (base, d, color, dy) => {
         base
           .append("path")
           .attr("d", d)
@@ -291,12 +291,12 @@ export default {
           .attr("transform", `translate(0, ${dy})`);
       };
 
-      const render_alpha = (base, d, color, alpha) => {
+      const render_alpha = (base, d, color, alpha, dy) => {
         let fill = color + ("00" + alpha.toString(16)).slice(-2);
-        render_color(base, d, fill);
+        render_color(base, d, fill, dy);
       };
 
-      const render_size = (base, d, size, fill, scale) => {
+      const render_size = (base, d, size, fill, scale, dy) => {
         const midX = size.midX, midY = size.midY, height = size.height;
         const tranx = midX * (1 - scale);
         const trany = midY * (1 - scale) + dy + (scale - 1) * height / 2;
@@ -308,10 +308,10 @@ export default {
             "transform",
             `translate(${tranx}, ${trany}),scale(${scale}, ${scale})`
           );
-        dy += (scale - 1) * height;
+        // dy += (scale - 1) * height;
       };
 
-      const render_length = (base, d, size, fill, scale) => {
+      const render_length = (base, d, size, fill, scale, dy) => {
         const midX = size.midX;
         const tranx = midX * (1 - scale);
         base
@@ -324,7 +324,7 @@ export default {
           );
       };
 
-      const render_number = (base, d, size, fill, num) => {
+      const render_number = (base, d, size, fill, num, dy) => {
         const height = size.height;
         let semi_dy = dy;
         for (let k = 0; k < num; k++) {
@@ -335,14 +335,14 @@ export default {
             .attr("fill", fill)
             .attr("transform", `translate(0, ${semi_dy})`);
         }
-        dy += (num - 1) * height;
+        // dy += (num - 1) * height;
       };
 
-      const render_simple = (base, d, size, fill) => {
-        render_number(base, d, size, fill, 1);
+      const render_simple = (base, d, size, fill, dy) => {
+        render_number(base, d, size, fill, 1, dy);
       };
 
-      const render_pie = (base, d, size, color, props, datum) => {
+      const render_pie = (base, d, size, color, props, datum, dy) => {
         const pie = d3
           .pie()
           .sort(null)
@@ -397,7 +397,7 @@ export default {
         this.pie_cnt++;
       };
 
-      const render_heatmap = (base, d, size, color, props, datum) => {
+      const render_heatmap = (base, d, size, color, props, datum, dy) => {
         const pie = d3
           .pie()
           .sort(null)
@@ -451,7 +451,7 @@ export default {
         this.pie_cnt++;
       };
 
-      const render_star = (base, d, size, color, props, datum) => {
+      const render_star = (base, d, size, color, props, datum, dy) => {
         const star_tx = size.midX, star_ty = size.midY + dy;
         const radius = Math.min(size.width, size.height) / 2;
         let values = [];
@@ -502,7 +502,7 @@ export default {
         this.star_cnt++;
       };
 
-      const render_flower = (base, d, size, color, props, datum) => {
+      const render_flower = (base, d, size, color, props, datum, dy) => {
         // const r = Math.max(size.width, size.height);
         let values = [],
           scales = [],
@@ -535,7 +535,7 @@ export default {
             .attr("fill", fills[i])
             .attr("transform", transform);
         }
-        dy += (0.5 * eleW - eleH / 2);
+        // dy += (0.5 * eleW - eleH / 2);
       };
 
       const render_glyph_transform = (datum, glyph, width) => {
@@ -565,8 +565,8 @@ export default {
         next_y = pos_y + 1.5 * height;
       };
 
-      const render_data = (data, glyph_width) => {
-        
+      const pre_render = (data) => {
+        let dys = [0], dy = 0;
         const path_size = _this.img_obj.path_size;
         let render_series = [];
         for (let i = 1; i < path_size.length; i++) {
@@ -575,6 +575,7 @@ export default {
             left: path_size[i].left,
             top: path_size[i].top
           });
+          dys.push(0);
         }
         render_series.sort((a, b) => {
           if (Math.abs(a.top - b.top) < 1e-6) {
@@ -582,95 +583,63 @@ export default {
           }
           return a.top - b.top;
         });
-        const glyph = g.append("g").attr("class", `glyph-${this.index}`);
-        render_glyph_transform(data, glyph, glyph_width);
-        dy = 0;
+
         for (let ix = 0; ix < render_series.length; ix++) {
           let i = render_series[ix].idx;
           let pos = encoding.findIndex((d) => d.element == i);
-          // console.log(encoding);
           let encoding_type = encoding[pos]["encoding"];
-          if (encoding_type == "none") {
-            render_simple(glyph, ds[i], path_size[i], fills[i]);
-          } else if (encoding_type == "number") {
-            render_number(
-              glyph,
-              ds[i],
-              path_size[i],
-              fills[i],
-              data[encoding[pos]["prop"]]
-            );
+          dys[i] = dy;
+          if (encoding_type == "number") {
+            dy += (data[encoding[pos]["prop"]] - 1) * path_size[i].height;
           } else if (encoding_type == "size") {
-            const mapped_value = this.dataRangeMapping(
-              data[encoding[pos]["prop"]],
-              encoding[pos]["prop"],
-              0.7,
-              1.3
-            );
-            render_size(glyph, ds[i], path_size[i], fills[i], mapped_value);
-          } else if (encoding_type == "length") {
-            const mapped_value = this.dataRangeMapping(
-              data[encoding[pos]["prop"]],
-              encoding[pos]["prop"],
-              0.7,
-              1.3
-            );
-            render_length(glyph, ds[i], path_size[i], fills[i], mapped_value);
-          } else if (encoding_type == "color") {
-            const cur_fill = category_map[encoding[pos]["prop"]][data[encoding[pos]["prop"]]];
-            render_color(glyph, ds[i], cur_fill);
-          } else if (encoding_type == "alpha") {
-            const mapped_value = parseInt(
-              this.dataRangeMapping(
-                data[encoding[pos]["prop"]],
-                encoding[pos]["prop"],
-                50,
-                200
-              )
-            );
-            render_alpha(glyph, ds[i], fills[i], mapped_value);
-          } else if (encoding_type == "pie") {
-            render_pie(
-              glyph,
-              ds[i],
-              path_size[i],
-              fills[i],
-              encoding[pos]["props"],
-              data
-            );
-          } else if (encoding_type == "heatmap") {
-            render_heatmap(
-              glyph,
-              ds[i],
-              path_size[i],
-              fills[i],
-              encoding[pos]["props"],
-              data
-            );
-          } else if (encoding_type == "star") {
-            render_star(
-              glyph,
-              ds[i],
-              path_size[i],
-              fills[i],
-              encoding[pos]["props"],
-              data
-            );
+            const scale = this.dataRangeMapping(data[encoding[pos]["prop"]], encoding[pos]["prop"], 0.7, 1.3);
+            dy += (scale - 1) *  path_size[i].height;
           } else if (encoding_type == "flower") {
-            render_flower(
-              glyph,
-              ds[i],
-              path_size[i],
-              fills[i],
-              encoding[pos]["props"],
-              data
-            );
+            dy += (0.5 * path_size[i].width - path_size[i].height / 2);
           }
         }
-        
+        return dys;
+      };
+
+      const render_data = (data, glyph_width) => {
+        const path_size = _this.img_obj.path_size;
+        const glyph = g.append("g").attr("class", `glyph-${this.index}`);
+        render_glyph_transform(data, glyph, glyph_width);
+        const dys = pre_render(data);
+        console.log(dys);
+        for (let i = 1; i < ds.length; i++) {
+          let pos = encoding.findIndex((d) => d.element == i);
+          let encoding_type = encoding[pos]["encoding"];
+          if (encoding_type == "none") {
+            render_simple(glyph, ds[i], path_size[i], fills[i], dys[i]);
+          } else if (encoding_type == "number") {
+            render_number(glyph,ds[i], path_size[i], fills[i], data[encoding[pos]["prop"]], dys[i]);
+          } else if (encoding_type == "size") {
+            const mapped_value = this.dataRangeMapping(data[encoding[pos]["prop"]], encoding[pos]["prop"], 0.7, 1.3);
+            render_size(glyph, ds[i], path_size[i], fills[i], mapped_value, dys[i]);
+          } else if (encoding_type == "length") {
+            const mapped_value = this.dataRangeMapping(data[encoding[pos]["prop"]], encoding[pos]["prop"], 0.7, 1.3);
+            render_length(glyph, ds[i], path_size[i], fills[i], mapped_value, dys[i]);
+          } else if (encoding_type == "color") {
+            const cur_fill = category_map[encoding[pos]["prop"]][data[encoding[pos]["prop"]]];
+            render_color(glyph, ds[i], cur_fill, dys[i]);
+          } else if (encoding_type == "alpha") {
+            const mapped_value = parseInt(this.dataRangeMapping(data[encoding[pos]["prop"]], encoding[pos]["prop"], 50, 200));
+            render_alpha(glyph, ds[i], fills[i], mapped_value, dys[i]);
+          } else if (encoding_type == "pie") {
+            render_pie(glyph, ds[i], path_size[i], fills[i], encoding[pos]["props"], data, dys[i]);
+          } else if (encoding_type == "heatmap") {
+            render_heatmap(glyph, ds[i], path_size[i], fills[i], encoding[pos]["props"], data, dys[i]);
+          } else if (encoding_type == "star") {
+            render_star(glyph, ds[i], path_size[i], fills[i], encoding[pos]["props"], data, dys[i]);
+          } else if (encoding_type == "flower") {
+            render_flower(glyph, ds[i], path_size[i], fills[i], encoding[pos]["props"], data, dys[i]);
+          }
+        }
       };
 
       const render = (data) => {
+        console.log(_this.img_obj.path_size);
         const glyph_width = data.length > 15 ? 120 : 160;
         data.forEach((it) => {
           render_data(it, glyph_width);

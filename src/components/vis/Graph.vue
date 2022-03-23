@@ -557,7 +557,7 @@ export default {
           const tranx = (1- scales[i]) * midX + scales[i] / 2 * eleW;
           const trany = 0.5 * midY + dy - eleH / 2 + 0.5 * eleW;
           const transform = `translate(${tranx}, ${trany}), scale(${scales[i]}, 0.5), rotate(${-rotates[i]}, ${rotX}, ${rotY})`;
-          console.log(transform);
+          // console.log(transform);
           base
             .append("path")
             .attr("d", d)
@@ -635,7 +635,7 @@ export default {
         const glyph = g.append("g").attr("class", `glyph-${this.index}`);
         render_glyph_transform(data, glyph, glyph_width);
         const dys = pre_render(data);
-        console.log(dys);
+        // console.log(dys);
         for (let i = 1; i < ds.length; i++) {
           let pos = encoding.findIndex((d) => d.element == i);
           let encoding_type = encoding[pos]["encoding"];
@@ -668,7 +668,7 @@ export default {
       };
 
       const render = (data) => {
-        console.log(_this.img_obj.path_size);
+        // console.log(_this.img_obj.path_size);
         const glyph_width = data.length > 15 ? 120 : 160;
         data.forEach((it) => {
           render_data(it, glyph_width);

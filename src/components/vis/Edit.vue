@@ -1,6 +1,8 @@
 <template>
   <div class="block-area" style="text-align: center">
     <p class="title" style="margin-bottom: 6px;">Edit</p>
+    <el-button type="warning" plain class="btn-visop" id="btn-export" @click="exportGraph">Export</el-button>
+    <el-button type="warning" class="btn-visop" id="btn-update" @click="updateMaps" style="">Update</el-button>  
     <div class="edit-area" style="">
       <el-scrollbar class="horizon-scroll">
         <div v-for="(it, idx) in maps" :key="idx" class="edit-item" :style="{'border-color': it.locked ? '#e56240': '#e4ae40'}">
@@ -27,8 +29,8 @@
             <div style="width: 72px; display: inline-block;">
               <span style="font-size: 15px">Element</span>
             </div>
-            <el-select v-model="it.element" size="mini" @change="changeMap($event, it, true)" style="width: 90px; margin-left: 4px">
-              <el-option v-for="item in elements" :key="item" :label="item" :value="item">
+            <el-select v-model="it.element" size="mini" @change="changeMap($event, it, true)" @mouseenter.native="eleHover(it.element)" @mouseleave.native="eleHover(-1)" style="width: 90px; margin-left: 4px">
+              <el-option v-for="item in elements" :key="item" :label="item" :value="item" >
               </el-option>
             </el-select>
           </div>
@@ -153,6 +155,12 @@ export default {
     });
   },
   methods: {
+    eleHover(ele) {
+      let idx = ele;
+      if (ele == 'none') idx = -1;
+      console.log(idx);
+      this.$emit('eleHoverChange', idx);
+    },
     selectMap(event, map) {
       map.selected = !map.selected;
     },
@@ -167,12 +175,33 @@ export default {
       if (dtype == 'category') return 'category';
       if (dtype == 'degree') return 'degree';
       return 'number';
+    },
+    updateMaps() {
+      this.$emit('updateMaps');
+    },
+    exportGraph() {
+      this.$emit('exportGraph');
     }
   }
 };
 </script>
 
 <style lang="less" scoped>
+
+.btn-visop {
+  position: absolute;
+  float: right;
+  top: 432px;
+  right: 28%;
+  padding: 10px 24px;
+  font-size: 18px;
+  font-family: "Lucida Sans Unicode";
+}
+
+#btn-update {
+  margin-right: 130px;
+  // background-color: #e9b95a;
+}
 
 .edit-area {
   height: 150px; 

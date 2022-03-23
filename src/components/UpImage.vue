@@ -351,7 +351,8 @@ export default {
         dataTypes: this.$store.state.data_type,
         groups : this.$store.state.group_props,
         svgsList: this.$store.state.all_svgs.slice(pos, pos + 3),
-        mapped: []
+        mapped: [],
+        cachedMatrix: true,
       };
       this.$axios({
         method: "post",

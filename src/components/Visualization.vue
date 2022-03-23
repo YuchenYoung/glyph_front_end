@@ -3,13 +3,11 @@
     <el-col :span="18">
       <div id="visD3" style="height: 59%;" class="block-area">
         <p class="title">Visualization</p>
-        <el-button type="warning" plain class="btn-visop" id="btn-export" @click="exportGraph">Export</el-button>
-        <el-button type="warning" class="btn-visop" id="btn-update" @click="updateMaps" style="">Update</el-button>
         <div style="margin-top: 12px;">
           <ul>
             <el-scrollbar class="vertical-scroll">
               <li v-for="(it, index) in img_obj.eles" :key="index">
-                <div v-html="it" style="width: 100px; height: 100px; box-sizing: content-box"></div>
+                <div v-html="resizeSvg(it, 70)" :style="{'border-color': index == ele_hover ? '#e56240' : '#e4ae40'}"></div>
                 <span>Element {{ index }}</span>
               </li>
             </el-scrollbar>
@@ -17,7 +15,7 @@
           <graph ref="mainGraph" :key="selectedKey" :best="true" v-on:selectedImgEncoding="getSelectedEncoding" style="width: 60%; margin-left: 5%; display: inline-block;"></graph>
         </div>
       </div>
-      <edit :key="editKey" :lockedProps="locked_props" :encoding="selectedEncoding" ref="edit" style="height: 34%"></edit>
+      <edit :key="editKey" :lockedProps="locked_props" :encoding="selectedEncoding" ref="edit" style="height: 34%" v-on:updateMaps="updateMaps" v-on:exportGraph="exportGraph" v-on:eleHoverChange="changeEleHover"></edit>
     </el-col>
     <el-col :span="6">
       <alternative ref="alt" :key="altKey" v-on:selectedImgChanged="getSelectedChanged"></alternative>
@@ -44,12 +42,27 @@ export default {
       selectedEncoding: [],
       img_obj: {},
       locked_props: [],
+      ele_hover: -1,
     }
   },
   created() {
     this.img_obj = this.$store.state.selected_img;
   },
   methods: {
+    resizeSvg(src, new_width) {
+      const width = +(src.split(`width="`)[1].split(`"`)[0]);
+      const height = +(src.split(`height="`)[1].split(`"`)[0]);
+      const new_height = height * new_width / width;
+      let head = src.split(`width="`)[0] + `width="`;
+      let tail = src.substring(src.indexOf(`width="`) + 7);
+      tail = tail.substring(tail.indexOf(`"`))
+      let retval = head + new_width + tail;
+      head = retval.split(`height="`)[0] + `height="`;
+      tail = retval.substring(src.indexOf(`height="`) + 8);
+      tail = tail.substring(tail.indexOf(`"`))
+      retval = head + new_height + tail;
+      return retval;
+    },
     getSelectedChanged(index) {
       this.$store.state.selected_index = +index;
       this.$store.state.selected_img = this.$store.state.img_preview[+index];
@@ -70,6 +83,9 @@ export default {
         this.altKey += 1;
         // _this.$refs.alt.updateRender(this.$store.state.selected_index);
       });
+    },
+    changeEleHover(ele) {
+      this.ele_hover = ele;
     },
     updateMaps() {
       const last_maps = this.$refs.edit.maps;
@@ -113,7 +129,8 @@ export default {
         dataTypes: this.$store.state.data_type,
         groups : this.$store.state.group_props,
         svgsList: this.$store.state.all_svgs.slice(pos, pos + 1),
-        mapped: new_maps
+        mapped: new_maps,
+        cachedMatrix: false
       };
       console.log(up_data)
       this.$axios({
@@ -131,7 +148,7 @@ export default {
       })
     },
     exportGraph() {
-      const content = this.$refs.mainGraph.$refs.mainGraph.innerHTML;
+      const content = this.resizeSvg(this.$refs.mainGraph.$refs.mainGraph.innerHTML, 1200);
       const fileName = `vis-${this.$store.state.theme}.svg`;
       const element = document.createElement('a');
       element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
@@ -159,12 +176,11 @@ export default {
   // background-color: #e9b95a;
 }
 
-
 ul {
   list-style: none;
   padding: 0;
   margin: 0;
-  width: 230px;
+  width: 240px;
   text-align: center;
   height: 290px;
   margin-left: 40px;
@@ -176,14 +192,24 @@ li {
   overflow: hidden;
   display: inline-block;
   text-align: center;
+  margin-bottom: 10px;
 }
 
 li div {
+  width: 74px; 
+  height: 74px; 
+  box-sizing: content-box;
   background-color: #ffffff;
-  border: 2px solid #e4ae40;
+  border: 2px solid;
+  // border-color: #e4ae40;
   border-radius: 6px;
   box-sizing: border-box;
-  margin: 0 8px 8px 0;
+  margin: 0 8px 4px 0;
+}
+
+li span {
+  font-size: 14px;
+  margin-left: -8px;
 }
 
 .el-button--warning.is-plain:hover {

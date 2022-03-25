@@ -11,6 +11,7 @@
     "axios": "^0.25.0",
     "core-js": "^3.6.5",
     "element-ui": "^2.15.6",
+    "jszip": "^3.7.1",
     "potrace": "^2.1.8",
     "svg-path-converter": "^1.0.12",
     "vue": "^2.6.11",

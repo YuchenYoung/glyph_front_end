@@ -1,11 +1,13 @@
 <template>
   <div class="block-area" style="text-align: center">
-    <p class="title" style="margin-bottom: 6px;">Edit</p>
-    <el-button type="warning" plain class="btn-visop" id="btn-export" @click="exportGraph">Export</el-button>
-    <el-button type="warning" class="btn-visop" id="btn-update" @click="updateMaps" style="">Update</el-button>  
+    <div style="text-align: left;">
+      <p class="title" style="margin-bottom: 6px;">Edit</p>
+      <el-button type="warning" plain class="btn-visop" id="btn-export" @click="exportGraph">Export</el-button>
+      <el-button type="warning" class="btn-visop" id="btn-update" @click="updateMaps">Update</el-button>  
+    </div>
     <div class="edit-area" style="">
       <el-scrollbar class="horizon-scroll">
-        <div v-for="(it, idx) in maps" :key="idx" class="edit-item" :style="{'border-color': it.locked ? '#e56240': '#e4ae40'}">
+        <div v-for="(it, idx) in maps" :key="idx" class="edit-item"  @mouseenter="eleHover(it.element)" @mouseleave="eleHover(-1)" :style="{'border-color': it.locked ? '#e56240': '#e4ae40'}">
           <el-tooltip class="item" effect="light" :disabled="!it.toTip" :content="it.tip" placement="top">
             <div class="prop-box" @click="selectMap($event, it, idx)" :style="{'background-color': it.selected ? '#e4ae40' : 'white'}">
               <div class="prop-text" :style="{'color': it.selected ? 'white' : 'black'}">
@@ -29,7 +31,7 @@
             <div style="width: 72px; display: inline-block;">
               <span style="font-size: 15px">Element</span>
             </div>
-            <el-select v-model="it.element" size="mini" @change="changeMap($event, it, true)" @mouseenter.native="eleHover(it.element)" @mouseleave.native="eleHover(-1)" style="width: 90px; margin-left: 4px">
+            <el-select v-model="it.element" size="mini" @change="changeMap($event, it, true)" style="width: 90px; margin-left: 4px">
               <el-option v-for="item in elements" :key="item" :label="item" :value="item" >
               </el-option>
             </el-select>
@@ -158,7 +160,7 @@ export default {
     eleHover(ele) {
       let idx = ele;
       if (ele == 'none') idx = -1;
-      console.log(idx);
+      // console.log(idx);
       this.$emit('eleHoverChange', idx);
     },
     selectMap(event, map) {
@@ -189,18 +191,20 @@ export default {
 <style lang="less" scoped>
 
 .btn-visop {
-  position: absolute;
   float: right;
-  top: 432px;
-  right: 28%;
+  margin-top: 13px;
+  margin-right: 28px;
   padding: 10px 24px;
   font-size: 18px;
   font-family: "Lucida Sans Unicode";
 }
 
 #btn-update {
-  margin-right: 130px;
-  // background-color: #e9b95a;
+  margin-right: 22px;
+}
+
+.title {
+  display: inline-block;
 }
 
 .edit-area {
@@ -250,6 +254,11 @@ export default {
 </style>
 
 <style lang="less">
+
+.el-button--warning.is-plain:hover {
+  background: #f7d694;
+}
+
 .el-tooltip__popper.is-light {
   max-width: 200px;
 }

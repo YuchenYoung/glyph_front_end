@@ -151,7 +151,7 @@ export default {
         url: "/search/svg/",
         params: {
           keyWords: this.$store.state.theme,
-          imgNum: 8,
+          imgNum: 1,
         },
       }).then((res) => {
         // this.$store.state.theme = this.img_content;
@@ -344,13 +344,15 @@ export default {
         // };
         return;
       }
+      console.log('yyyyyyyyyyyyyyyy');
+      console.log(this.$store.state.data_type);
       let up_data = {
         content: this.$store.state.theme,
         dataProps: this.$store.state.props,
         similarity: this.$store.state.similarity,
         dataTypes: this.$store.state.data_type,
         groups : this.$store.state.group_props,
-        svgsList: this.$store.state.all_svgs.slice(pos, pos + 3),
+        svgsList: this.$store.state.all_svgs.slice(pos, pos + 5),
         mapped: [],
         cachedMatrix: true,
       };
@@ -507,7 +509,7 @@ export default {
       this.$store.state.svg_list = obj.svgs;
       dis.d_list = obj.ds;
       dis.fill = obj.fill;
-      let svg_header = `<svg width="${dis.width}" height="${dis.height}" viewBox="0 0 ${obj.width} ${obj.height}">`;
+      let svg_header = `<svg width="${dis.width}" height="${dis.height}" viewBox="0 0 ${obj.width} ${obj.height}" xmlns="http://www.w3.org/2000/svg">`;
       let ori_svg = svg_header;
       let eles = [];
       dis.path_size = [{"width": obj.width, "height": obj.height}];

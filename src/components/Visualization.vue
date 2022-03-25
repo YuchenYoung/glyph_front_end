@@ -2,7 +2,10 @@
   <el-row>
     <el-col :span="18">
       <div id="visD3" style="height: 59%;" class="block-area">
-        <p class="title">Visualization</p>
+        <div style="text-align: left;">
+          <p class="title">Visualization</p>
+          <el-button type="warning" class="btn-visop" id="btn-toggle" @click="toggleVis">Toggle</el-button>
+        </div>
         <div style="margin-top: 12px;">
           <ul>
             <el-scrollbar class="vertical-scroll">
@@ -24,6 +27,7 @@
 </template>
 
 <script>
+import JsZip from 'jszip'
 import Graph from "../components/vis/Graph.vue";
 import Alternative from "../components/vis/Alternative.vue";
 import Edit from '../components/vis/Edit.vue'
@@ -83,6 +87,9 @@ export default {
         this.altKey += 1;
         // _this.$refs.alt.updateRender(this.$store.state.selected_index);
       });
+    },
+    toggleVis() {
+      this.$refs.mainGraph.show_vis = !this.$refs.mainGraph.show_vis;
     },
     changeEleHover(ele) {
       this.ele_hover = ele;
@@ -148,32 +155,64 @@ export default {
       })
     },
     exportGraph() {
-      const content = this.resizeSvg(this.$refs.mainGraph.$refs.mainGraph.innerHTML, 1200);
-      const fileName = `vis-${this.$store.state.theme}.svg`;
-      const element = document.createElement('a');
-      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content))
-      element.setAttribute('download', fileName);
-      element.style.display = 'none';
-      element.click();
+      // console.log(this.$refs.mainGraph.$refs);
+      const zip = new JsZip();
+      let files = [];
+
+      const vis_svg = this.resizeSvg(this.$refs.mainGraph.$refs.mainGraph.childNodes[0].outerHTML, 1200);
+      files.push({name: 'visulization.svg', raw: vis_svg});
+
+      const legend_svg = this.resizeSvg(this.$refs.mainGraph.$refs.mainGraph.childNodes[1].outerHTML, 800);
+      files.push({name: 'legend.svg', raw: legend_svg});
+      
+      // const ori_svg = this.resizeSvg(this.img_obj.eles[0], this.img_obj.ori_size.width);
+      const ori_svg = this.img_obj.eles[0];
+      files.push({name: 'image.svg', raw: ori_svg});
+
+      let map_csv = ['prop', 'element', 'encoding-type'].join(',') + '\n';
+      this.selectedEncoding.forEach(it => {
+        if (it.prop != 'none' && it.element != 'none' && it.encoding != 'none') {
+          map_csv += ([it.prop, it.element, it.encoding].join(',') + '\n');
+        }
+      })
+      files.push({name: 'encoding.csv', raw: map_csv});
+
+      files.forEach(it => {
+        zip.file(it.name, it.raw);
+      })
+      zip.generateAsync({
+        type: "blob",
+        compression: "DEFLATE",
+        compressionOptions: {
+          level: 9
+        }
+      }).then(content => {
+        const fileName = `vis-${this.$store.state.theme}.zip`;
+        const element = document.createElement('a');
+        element.setAttribute('href', URL.createObjectURL(content))
+        element.setAttribute('download', fileName);
+        element.style.display = 'none';
+        element.click();
+      });
+      
     }
   }
 };
 </script>
 
 <style lang="less" scoped>
+
 .btn-visop {
-  position: absolute;
   float: right;
-  top: 30px;
-  right: 28%;
+  margin-top: 20px;
+  margin-right: 28px;
   padding: 10px 24px;
   font-size: 18px;
   font-family: "Lucida Sans Unicode";
 }
 
-#btn-update {
-  margin-right: 130px;
-  // background-color: #e9b95a;
+.title {
+  display: inline-block;
 }
 
 ul {
@@ -212,8 +251,5 @@ li span {
   margin-left: -8px;
 }
 
-.el-button--warning.is-plain:hover {
-  background: #f7d694;
-}
 
 </style>;

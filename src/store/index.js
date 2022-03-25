@@ -145,7 +145,7 @@ export default new Vuex.Store({
 
     generate(state, view) {
       this.dispatch("dataProcess");
-      console.log(state);
+      // console.log(state);
       // console.log(view);
       view.$axios({
         method: "post",
@@ -160,8 +160,6 @@ export default new Vuex.Store({
           groups: this.state.group_props
         },
       }).then(res => {
-        console.log('qqqqqqqqqqqqqqqqqqqqqqqqqqqqqww');
-        console.log(res.data);
         this.state.props = res.data.props;
         this.state.similarity = res.data.similarity;
         this.state.prop_similarity = res.data.dic;

@@ -256,6 +256,7 @@ export default {
       // let dy = 0;
       let pos_x = 0, pos_y = 0, next_y = 0;
       const data = this.$store.state.data;
+      // const names = this.$store.state.names;
       const ds = this.img_obj.d_list;
       const fills = this.img_obj.fill;
       let img_width = this.img_obj.ori_size.width;
@@ -317,7 +318,6 @@ export default {
       };
 
       const render_color = (base, color) => {
-        console.log(base);
         base.attr("fill", color)
       };
 
@@ -608,6 +608,16 @@ export default {
           );
         pos_x += width * 1.5;
         next_y = pos_y + 1.5 * height;
+        return height;
+      };
+
+      const render_name = (glyph, it_name, width, height) => {
+        const font = parseInt(height / 10);
+        glyph.append('text')
+          .attr('text-anchor', 'middle')
+          .attr('transform', `translate(${width / 2}, ${1.5 * height - 1.2 * font})`)
+          .attr('font-size', `${font}px`)
+          .text(it_name);
       };
 
       const pre_render = (data) => {
@@ -644,11 +654,13 @@ export default {
           } else if (cur_types.includes("flower")) {
             dy += (0.5 * path_size[i].width - path_size[i].height / 2);
           }
+          dys.push(dy);
         }
+
         return dys;
       };
 
-      const render_data = (data, glyph_width) => {
+      const render_data = (data, glyph_width, name) => {
         const path_size = _this.img_obj.path_size;
         const glyph = g.append("g").attr("class", `glyph-${this.index}`);
         render_glyph_transform(data, glyph, glyph_width);
@@ -656,8 +668,7 @@ export default {
         const group_types = ['pie', 'heatmap', 'star', 'flower'];
         const shape_types = ['none', 'number', 'size', 'length'];
         const color_types = ['color', 'alpha'];
-        console.log('cccccccccccccccccc');
-        console.log(encoding);
+        // console.log(encoding);
         for (let i = 1; i < ds.length; i++) {
           // let pos = encoding.findIndex((d) => d.element == i);
           const cur_encoding = encoding.filter(d => d.element == i);
@@ -740,13 +751,17 @@ export default {
           }
           */
         }
+        if (x_prop == '' && y_prop == '') {
+          render_name(glyph, name, img_width, img_height);
+        }
       };
 
       const render = (data) => {
         // console.log(_this.img_obj.path_size);
         const glyph_width = data.length > 15 ? 120 : 160;
-        data.forEach((it) => {
-          render_data(it, glyph_width);
+        const names = this.$store.state.names;
+        data.forEach((it, i) => {
+          render_data(it, glyph_width, names[i]);
         });
       };
 
@@ -975,7 +990,7 @@ export default {
         const star_plot = base
           .append("g")
           .attr("class", "star_plot")
-          .attr("transform", `translate(${star_tx},${star_ty})`);
+          .attr("transform", `translate(${star_tx},${star_ty - size.midY + size.height / 2})`);
 
         const pathGen = d3.lineRadial();
         let pathData = [];
@@ -1000,6 +1015,7 @@ export default {
             .attr('y', 1.5 * ly)
             .attr('text-anchor', 'middle')
             .attr('transform', `rotate(${lr/ Math.PI * 180 + 90}, ${1.5* lx}, ${1.5 * ly})`)
+            // .text('star')
             .text(props[i]);
           // to next 
           r += radians;
@@ -1043,7 +1059,7 @@ export default {
         for (let i = 0; i < values.length; i++) {
           const tranx = (1- scales[i]) * midX + scales[i] / 2 * eleW;
           const trany = 0.5 * midY - eleH / 2 + 0.5 * eleW;
-          const transform = `translate(${tranx}, ${trany}), scale(${scales[i]}, 0.5), rotate(${-rotates[i]}, ${rotX}, ${rotY})`;
+          const transform = `translate(${tranx}, ${trany - size.midY + size.height / 2}), scale(${scales[i]}, 0.5), rotate(${-rotates[i]}, ${rotX}, ${rotY})`;
           // console.log(transform);
           base
             .append("path")
@@ -1052,10 +1068,11 @@ export default {
             .attr("transform", transform);
           // const x = radius * Math.cos(radius);
           // const y = radius * Math.sin(radius);
+          
           base.append('text')
             .attr('font-size', `${font_size}px`)
             .attr('text-anchor', 'middle')
-            .attr('transform', `translate(${tranx - midY / 4 + 15}, ${trany - midY / 2}), rotate(${90 - rotates[i]}, ${rotX}, ${rotY})`)
+            .attr('transform', `translate(${tranx - midY / 4}, ${trany - midY / 2  - size.midY + size.height / 2}), rotate(${90 - rotates[i]}, ${rotX}, ${rotY})`)
             .text(props[i]);
         }
       };

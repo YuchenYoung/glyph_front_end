@@ -151,7 +151,7 @@ export default {
         url: "/search/svg/",
         params: {
           keyWords: this.$store.state.theme,
-          imgNum: 1,
+          imgNum: 8,
         },
       }).then((res) => {
         // this.$store.state.theme = this.img_content;

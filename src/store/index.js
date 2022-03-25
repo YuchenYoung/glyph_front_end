@@ -13,6 +13,7 @@ export default new Vuex.Store({
     data_range: {},
     data_ready: false,
     props: [],
+    names: [],
     group_props: [],
     theme: "",
     similarity: [],

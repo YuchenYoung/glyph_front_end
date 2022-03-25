@@ -54,9 +54,10 @@ export default {
   },
   methods: {
     resizeSvg(src, new_width) {
+      new_width = parseInt(new_width)
       const width = +(src.split(`width="`)[1].split(`"`)[0]);
       const height = +(src.split(`height="`)[1].split(`"`)[0]);
-      const new_height = height * new_width / width;
+      const new_height = parseInt(height * new_width / width);
       let head = src.split(`width="`)[0] + `width="`;
       let tail = src.substring(src.indexOf(`width="`) + 7);
       tail = tail.substring(tail.indexOf(`"`))
@@ -165,8 +166,8 @@ export default {
       const legend_svg = this.resizeSvg(this.$refs.mainGraph.$refs.mainGraph.childNodes[1].outerHTML, 800);
       files.push({name: 'legend.svg', raw: legend_svg});
       
-      // const ori_svg = this.resizeSvg(this.img_obj.eles[0], this.img_obj.ori_size.width);
-      const ori_svg = this.img_obj.eles[0];
+      const ori_svg = this.resizeSvg(this.img_obj.eles[0], this.img_obj.ori_size.width);
+      // const ori_svg = this.img_obj.eles[0];
       files.push({name: 'image.svg', raw: ori_svg});
 
       let map_csv = ['prop', 'element', 'encoding-type'].join(',') + '\n';

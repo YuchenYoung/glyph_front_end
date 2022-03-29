@@ -344,16 +344,15 @@ export default {
         // };
         return;
       }
-      console.log('yyyyyyyyyyyyyyyy');
-      console.log(this.$store.state.data_type);
       let up_data = {
         content: this.$store.state.theme,
         dataProps: this.$store.state.props,
         similarity: this.$store.state.similarity,
         dataTypes: this.$store.state.data_type,
         groups : this.$store.state.group_props,
-        svgsList: this.$store.state.all_svgs.slice(pos, pos + 5),
+        svgsList: this.$store.state.all_svgs.slice(pos, pos + 1),
         mapped: [],
+        first: pos,
         cachedMatrix: true,
       };
       this.$axios({

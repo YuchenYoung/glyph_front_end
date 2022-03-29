@@ -4,9 +4,9 @@
       <div id="visD3" style="height: 59%;" class="block-area">
         <div style="text-align: left;">
           <p class="title">Visualization</p>
-          <el-button type="warning" class="btn-visop" id="btn-toggle" @click="toggleVis">Toggle</el-button>
+          <el-button v-if="has_group" type="warning" class="btn-visop" id="btn-toggle" @click="toggleVis">Legend</el-button>
         </div>
-        <div style="margin-top: 12px;">
+        <div style="margin-top: 6px;">
           <ul>
             <el-scrollbar class="vertical-scroll">
               <li v-for="(it, index) in img_obj.eles" :key="index">
@@ -47,10 +47,12 @@ export default {
       img_obj: {},
       locked_props: [],
       ele_hover: -1,
+      has_group: false
     }
   },
   created() {
     this.img_obj = this.$store.state.selected_img;
+    this.has_group = this.$store.state.group_props.length > 0;
   },
   methods: {
     resizeSvg(src, new_width) {
@@ -76,8 +78,8 @@ export default {
       this.selectedKey += 1;
     },
     getSelectedEncoding(obj) {
-      console.log('===================');
-      console.log(obj);
+      // console.log('===================');
+      // console.log(obj);
       this.selectedEncoding = obj;
       this.editKey += 1;
     },
@@ -138,6 +140,7 @@ export default {
         groups : this.$store.state.group_props,
         svgsList: this.$store.state.all_svgs.slice(pos, pos + 1),
         mapped: new_maps,
+        first: pos,
         cachedMatrix: false
       };
       console.log(up_data)
@@ -163,8 +166,10 @@ export default {
       const vis_svg = this.resizeSvg(this.$refs.mainGraph.$refs.mainGraph.childNodes[0].outerHTML, 1200);
       files.push({name: 'visulization.svg', raw: vis_svg});
 
-      const legend_svg = this.resizeSvg(this.$refs.mainGraph.$refs.mainGraph.childNodes[1].outerHTML, 800);
-      files.push({name: 'legend.svg', raw: legend_svg});
+      if (this.has_group) {
+        const legend_svg = this.resizeSvg(this.$refs.mainGraph.$refs.mainGraph.childNodes[1].outerHTML, 800);
+        files.push({name: 'legend.svg', raw: legend_svg});
+      }
       
       const ori_svg = this.resizeSvg(this.img_obj.eles[0], this.img_obj.ori_size.width);
       // const ori_svg = this.img_obj.eles[0];
@@ -181,6 +186,13 @@ export default {
       files.forEach(it => {
         zip.file(it.name, it.raw);
       })
+
+      const elements = zip.folder("elements");
+      for (let i = 1; i < this.img_obj.eles.length; i++) {
+        const ele_src = this.resizeSvg(this.img_obj.eles[i], this.img_obj.ori_size.width);
+        elements.file(`element-${i}.svg`, ele_src);
+      }
+
       zip.generateAsync({
         type: "blob",
         compression: "DEFLATE",
@@ -195,7 +207,6 @@ export default {
         element.style.display = 'none';
         element.click();
       });
-      
     }
   }
 };
@@ -205,7 +216,7 @@ export default {
 
 .btn-visop {
   float: right;
-  margin-top: 20px;
+  margin-top: 18px;
   margin-right: 28px;
   padding: 10px 24px;
   font-size: 18px;

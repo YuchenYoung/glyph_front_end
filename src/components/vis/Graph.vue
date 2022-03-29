@@ -25,7 +25,7 @@ export default {
       // data_size: 0,
       pie_cnt: 0,
       star_cnt: 0,
-      index: 0,
+      index: 1000,
       x_prop: '',
       y_prop: '',
     };
@@ -239,12 +239,12 @@ export default {
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("width", svg_width)
         .attr("height", svg_height)
-        .attr("viewBox", "0 0 1500 750")
+        .attr("viewBox", "0 0 1600 800")
         .attr("transform", `translate(${svg_height * 0.1}, 0)`)
       // const vis_width = +vis_svg.attr("width");
       // const vis_height = +vis_svg.attr("height");
-      const vis_width = 1500;
-      const vis_height = 750;
+      const vis_width = 1600;
+      const vis_height = 800;
       const margin = { top: 25, right: 60, bottom: 25, left: 80 };
       const inner_width = vis_width - margin.left - margin.right;
       const inner_height = vis_height - margin.top - margin.bottom;
@@ -267,9 +267,10 @@ export default {
       let xScale, yScale;
       const data_type = this.$store.state.data_type;
       let category_map = {};
+      const height_scale = ((encoding.map(d => d.encoding)).includes('flower')) ? 1.85 : 1.55;
 
       const category_init = (prop, arr) => {
-        const colors = ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd']
+        const colors = ['#8dd3c7', '#fccde5', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd']
         let pos = 0;
         category_map[prop] = {};
         let cat_set = new Set();
@@ -289,10 +290,11 @@ export default {
           };
           xScale = d3
             .scaleLinear()
-            .domain([d3.min(data, xValue), d3.max(data, xValue)])
+            // .domain([d3.min(data, xValue), d3.max(data, xValue)])
+            .domain([0.6, 1.8])
             .range([0, inner_width])
             .nice();
-          const xAxis = d3.axisBottom(xScale).tickSize(inner_height);
+          const xAxis = d3.axisBottom(xScale).ticks(7).tickSize(inner_height);
           const xAxisGroup = g.append('g').call(xAxis).attr('class', 'x-axis')
           xAxisGroup.selectAll('.domain').remove();
         }
@@ -302,10 +304,11 @@ export default {
           };
           yScale = d3
             .scaleLinear()
-            .domain([d3.max(data, yValue), d3.min(data, yValue)])
+            // .domain([d3.max(data, yValue), d3.min(data, yValue)])
+            .domain([80, 0])
             .range([0, inner_height])
             .nice();
-          const yAxis = d3.axisLeft(yScale).tickSize(-inner_width);
+          const yAxis = d3.axisLeft(yScale).ticks(5).tickSize(-inner_width);
           const yAxisGroup = g.append('g').call(yAxis).attr('class', 'y-axis')
           yAxisGroup.selectAll('.domain').remove();
         }
@@ -419,14 +422,14 @@ export default {
           .outerRadius(Math.max(pie_tx, pie_ty));
         base
           .append("clipPath")
-          .attr("id", `clip-pie-${this.pie_cnt}`)
+          .attr("id", `clip-pie-${this.index}-${this.pie_cnt}`)
           .append("path")
           .attr("d", d)
           .attr("transform", `translate(${-pie_tx},${-pie_ty})`);
         const pie_chart = base
           .append("g")
           .attr("class", "pie_area")
-          .attr("clip-path", `url(#clip-pie-${this.pie_cnt})`)
+          .attr("clip-path", `url(#clip-pie-${this.index}-${this.pie_cnt})`)
           .attr("transform", `translate(${pie_tx},${pie_ty})`);
         pie_chart
           .selectAll("g")
@@ -473,14 +476,14 @@ export default {
           .outerRadius(Math.max(pie_tx, pie_ty));
         base
           .append("clipPath")
-          .attr("id", `clip-pie-${this.pie_cnt}`)
+          .attr("id", `clip-pie-${this.index}-${this.pie_cnt}`)
           .append("path")
           .attr("d", d)
           .attr("transform", `translate(${-pie_tx},${-pie_ty})`);
         const pie_chart = base
           .append("g")
           .attr("class", "pie_area")
-          .attr("clip-path", `url(#clip-pie-${this.pie_cnt})`)
+          .attr("clip-path", `url(#clip-pie-${this.index}-${this.pie_cnt})`)
           .attr("transform", `translate(${pie_tx},${pie_ty})`);
         pie_chart
           .selectAll("g")
@@ -594,6 +597,7 @@ export default {
         //const trany = img_height * 0.5 * (scale - 1);
         // const tranx = pos_x;
         // const trany = pos_y;
+        // console.log(this.index);
         let glyph_x = pos_x, glyph_y = pos_y;
         if (x_prop != '' && y_prop != '') {
           glyph_x = xScale(xValue(datum)) - width * 0.5;
@@ -606,16 +610,16 @@ export default {
             "transform",
             `translate(${glyph_x},${glyph_y}),scale(${scale},${scale})`
           );
-        pos_x += width * 1.5;
-        next_y = pos_y + 1.5 * height;
+        pos_x += width * 2;
+        next_y = pos_y + height_scale * height;
         return height;
       };
 
       const render_name = (glyph, it_name, width, height) => {
-        const font = parseInt(height / 10);
+        const font = parseInt(height / 9.5);
         glyph.append('text')
           .attr('text-anchor', 'middle')
-          .attr('transform', `translate(${width / 2}, ${1.5 * height - 1.2 * font})`)
+          .attr('transform', `translate(${width / 2}, ${(height_scale - 0.02) * height - 1.2 * font})`)
           .attr('font-size', `${font}px`)
           .text(it_name);
       };
@@ -719,37 +723,10 @@ export default {
               const cur_fill = category_map[prop][data[prop]];
               render_color(shape, cur_fill)
             } else if (rtype == 'alpha') {
-              const cur_alpha = parseInt(this.dataRangeMapping(data[prop], prop, 50, 200));
+              const cur_alpha = parseInt(this.dataRangeMapping(data[prop], prop, 180, 250));
               render_alpha(shape, fills[i], cur_alpha);
             }
           }
-          /*
-          if (encoding_type == "none") {
-            render_simple(glyph, ds[i], path_size[i], fills[i], dys[i]);
-          } else if (encoding_type == "number") {
-            render_number(glyph, ds[i], path_size[i], fills[i], data[encoding[pos]["prop"]], dys[i]);
-          } else if (encoding_type == "size") {
-            const mapped_value = this.dataRangeMapping(data[encoding[pos]["prop"]], encoding[pos]["prop"], 0.7, 1.3);
-            render_size(glyph, ds[i], path_size[i], fills[i], mapped_value, dys[i]);
-          } else if (encoding_type == "length") {
-            const mapped_value = this.dataRangeMapping(data[encoding[pos]["prop"]], encoding[pos]["prop"], 0.7, 1.3);
-            render_length(glyph, ds[i], path_size[i], fills[i], mapped_value, dys[i]);
-          } else if (encoding_type == "color") {
-            const cur_fill = category_map[encoding[pos]["prop"]][data[encoding[pos]["prop"]]];
-            render_color(glyph, ds[i], cur_fill, dys[i]);
-          } else if (encoding_type == "alpha") {
-            const mapped_value = parseInt(this.dataRangeMapping(data[encoding[pos]["prop"]], encoding[pos]["prop"], 50, 200));
-            render_alpha(glyph, ds[i], fills[i], mapped_value, dys[i]);
-          } else if (encoding_type == "pie") {
-            render_pie(glyph, ds[i], path_size[i], fills[i], encoding[pos]["props"], data, dys[i]);
-          } else if (encoding_type == "heatmap") {
-            render_heatmap(glyph, ds[i], path_size[i], fills[i], encoding[pos]["props"], data, dys[i]);
-          } else if (encoding_type == "star") {
-            render_star(glyph, ds[i], path_size[i], fills[i], encoding[pos]["props"], data, dys[i]);
-          } else if (encoding_type == "flower") {
-            render_flower(glyph, ds[i], path_size[i], fills[i], encoding[pos]["props"], data, dys[i]);
-          }
-          */
         }
         if (x_prop == '' && y_prop == '') {
           render_name(glyph, name, img_width, img_height);
@@ -758,7 +735,7 @@ export default {
 
       const render = (data) => {
         // console.log(_this.img_obj.path_size);
-        const glyph_width = data.length > 15 ? 120 : 160;
+        const glyph_width = data.length > 10 ? 150 : 160;
         const names = this.$store.state.names;
         data.forEach((it, i) => {
           render_data(it, glyph_width, names[i]);
@@ -821,7 +798,7 @@ export default {
       const path_size = this.img_obj.path_size;
       const img_width = this.img_obj.ori_size.width;
       const img_height = this.img_obj.ori_size.height;
-      let pos_x = 100;
+      let pos_x = 100, base_scale = 1;
 
       const pie_legend = (base, d, size, color, props, datum) => {
         const pie = d3
@@ -977,7 +954,7 @@ export default {
       const star_legend = (base, d, size, color, props, datum) => {
         const star_tx = size.midX, star_ty = size.midY;
         const radius = Math.min(size.width, size.height) / 2;
-        const font_size = parseInt(img_width / 15);
+        let font_size = parseInt(img_width / 13);
         let values = [];
         props.forEach((it) => {
           values.push(datum[it]);
@@ -990,31 +967,44 @@ export default {
         const star_plot = base
           .append("g")
           .attr("class", "star_plot")
-          .attr("transform", `translate(${star_tx},${star_ty - size.midY + size.height / 2})`);
+          .attr("transform", `translate(${star_tx},${100+star_ty - size.midY + size.height / 2})`);
 
         const pathGen = d3.lineRadial();
         let pathData = [];
         let r = 0, lr = -Math.PI / 2, radians = (2 * Math.PI) / props.length;
         values.forEach((d, i) => {
-          pathData.push([r, d]);
+          pathData.push([r, 3.5*d]);
           // draw guidelines
-          const lx = radius * Math.cos(lr);
-          const ly = radius * Math.sin(lr);
+          let lx = 4* radius * Math.cos(lr);
+          let ly = 4*radius * Math.sin(lr);
           star_plot.append('line')
             .attr('class', 'star-axis')
             .attr('x1', 0)
             .attr('y1', 0)
-            .attr('x2', lx)
-            .attr('y2', ly)
+            .attr('x2', 1.05 * lx)
+            .attr('y2', 1.05 * ly)
             .attr('stroke', '#aaaa')
             .attr('stroke-width', 8)
             .attr('stroke-dasharray', '20')
+          let text_rotate = lr/ Math.PI * 180 + 90;
+          if (text_rotate == 90 || text_rotate == 270) {
+            text_rotate = 0;
+          } else if (text_rotate > 90 && text_rotate < 270) {
+            text_rotate -= 180;
+          }
+          let cur_font = font_size * 1.2
+          if (radius * base_scale < 30) {
+            lx *= 1.5; 
+            ly *= 1.5;
+          } else {
+            cur_font = parseInt(cur_font * 1.2);
+          }
           star_plot.append('text')
-            .attr('font-size', `${font_size}px`)
-            .attr('x', 1.5 * lx)
-            .attr('y', 1.5 * ly)
+            .attr('font-size', `${cur_font}px`)
+            .attr('x', 1.15 * lx)
+            .attr('y', 1.15 * ly)
             .attr('text-anchor', 'middle')
-            .attr('transform', `rotate(${lr/ Math.PI * 180 + 90}, ${1.5* lx}, ${1.5 * ly})`)
+            .attr('transform', `rotate(${text_rotate}, ${1.07* lx}, ${1.07 * ly})`)
             // .text('star')
             .text(props[i]);
           // to next 
@@ -1047,9 +1037,10 @@ export default {
         const value_min = Math.min.apply(null, values);
         for (let i = 0; i < values.length; i++) {
           scales.push(
-            0.4 + 0.3 * (values[i] - value_min) / (value_max - value_min)
+            0.4 + 0.2 * (values[i] - value_min) / (value_max - value_min)
           );
-          const alpha = parseInt(100 + (150 * i) / values.length);
+          const alpha = parseInt(150 + 500 * (scales[i] - 0.4));
+          // const alpha = parseInt(100 + (150 * i) / values.length);
           fills.push(color + ("00" + alpha.toString(16)).slice(-2));
           rotates.push((180 / (values.length - 1)) * i);
         }
@@ -1057,9 +1048,9 @@ export default {
         const eleW = size.width, eleH = size.height;
         const rotX = midX - eleW / 2, rotY = midY;
         for (let i = 0; i < values.length; i++) {
-          const tranx = (1- scales[i]) * midX + scales[i] / 2 * eleW;
+          const tranx = (1 - scales[i]) * midX + scales[i] / 2 * eleW;
           const trany = 0.5 * midY - eleH / 2 + 0.5 * eleW;
-          const transform = `translate(${tranx}, ${trany - size.midY + size.height / 2}), scale(${scales[i]}, 0.5), rotate(${-rotates[i]}, ${rotX}, ${rotY})`;
+          const transform = `translate(${tranx}, ${trany - size.midY +  size.height / 2 }), scale(${scales[i]}, 0.5), rotate(${-rotates[i]}, ${rotX}, ${rotY})`;
           // console.log(transform);
           base
             .append("path")
@@ -1068,11 +1059,14 @@ export default {
             .attr("transform", transform);
           // const x = radius * Math.cos(radius);
           // const y = radius * Math.sin(radius);
-          
+          //const text_rotate = (rotates[i] == 0 || rotates[i] == 180) ? 0 : 90 - rotates[i];
+          //const text_x = tranx + 1.2*eleW * scales[i] * Math.cos((rotates[i]) / 180 * Math.PI) ;
+          //const text_y = trany - 0.25 * eleW - 1.2*eleW * scales[i] * Math.sin((rotates[i]) / 180 * Math.PI) ;
           base.append('text')
             .attr('font-size', `${font_size}px`)
             .attr('text-anchor', 'middle')
-            .attr('transform', `translate(${tranx - midY / 4}, ${trany - midY / 2  - size.midY + size.height / 2}), rotate(${90 - rotates[i]}, ${rotX}, ${rotY})`)
+            //.attr('transform', `translate(${text_x}, ${text_y}), rotate(${text_rotate})`)
+            .attr('transform', `translate(${tranx - midY / 4}, ${trany - 3 * midY / 2 + size.height / 2}), rotate(${90 - rotates[i]}, ${rotX}, ${rotY})`)
             .text(props[i]);
         }
       };
@@ -1084,8 +1078,9 @@ export default {
         if (!group_encodings.includes(encoding_type)) {
           continue;
         }
-        let width = 300;
+        let width = 200;
         let scale = width / img_width;
+        base_scale = scale;
         let height = img_height * scale;
         const legend = g.append("g")
           .attr("class", `legend-${this.index}`)
@@ -1093,7 +1088,7 @@ export default {
           .attr("height", height)
           .attr(
             "transform",
-            `translate(${pos_x}, 100),scale(${scale}, ${scale})`
+            `translate(${pos_x}, 150),scale(${scale}, ${scale})`
           );
         if (encoding_type == "pie") {
           pie_legend(legend, ds[i], path_size[i], fills[i], encoding[pos]["props"], data[0]);

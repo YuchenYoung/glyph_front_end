@@ -4,7 +4,7 @@
       <el-table
         :data="tableData"
         border
-        height="260px"
+        height="280px"
         style="width: 94%; margin-left: 3%"
         :header-cell-style="{ background: '#ffe3b1', color: '#dd9f20' }"
         :row-style="tableRowStyle"
@@ -35,6 +35,7 @@
       <el-button type="warning" class="btn-options" id="btn-ge" @click="generate">Generate</el-button>
       <el-button type="warning" class="btn-options" plain id="btn-re" @click="resetData">Re-upload</el-button>
     </div>
+    <div id="svgMeasure" ref="svgSize"></div>
   </div>
 </template>
 
@@ -123,8 +124,6 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
 .table-area {
-  // width: 94%;
-  // margin-left: 3%;
   width: 100%;
 }
 
@@ -137,10 +136,6 @@ export default {
 }
 
 .btn-options {
-  // width: 180px;
-  // height: 50px;
-  // margin-top: 22px;
-  // font-size: 20px;
   width: 120px;
   height: 42px;
   margin-top: 22px;

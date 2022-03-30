@@ -2,8 +2,8 @@
   <div class="block-area" style="text-align: center">
     <div style="text-align: left;">
       <p class="title" style="margin-bottom: 6px;">Edit</p>
-      <el-button type="warning" plain class="btn-visop" id="btn-export" @click="exportGraph">Export</el-button>
-      <el-button type="warning" class="btn-visop" id="btn-update" @click="updateMaps">Update</el-button>  
+      <el-button v-show="img_ready" type="warning" plain class="btn-visop" id="btn-export" @click="exportGraph">Export</el-button>
+      <el-button v-show="img_ready" type="warning" class="btn-visop" id="btn-update" @click="updateMaps">Update</el-button>  
     </div>
     <div class="edit-area" style="">
       <el-scrollbar class="horizon-scroll">
@@ -58,12 +58,14 @@ export default {
   data() {
     return {
       remap: false,
+      img_ready: false,
       maps: [],
       elements: ['none'],
       encodings: ['none', 'x', 'y', 'number', 'color', 'alpha', 'length', 'size', 'flower', 'pie', 'heatmap', 'star']
     }
   },
   created() {
+    this.img_ready = this.$store.state.img_ready;
     const props = this.$store.state.props;
     const groups = this.$store.state.group_props;
     const mapped_props = [];

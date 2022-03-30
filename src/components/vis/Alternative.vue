@@ -7,7 +7,7 @@
           <el-popover placement="left" width="100" trigger="hover" :close-delay="100">
             <!-- <graph :best="false" :old="true" :obj="firstImg(index)"></graph> -->
             <div v-html="it.eles[0]" style="width: 100px; height: 100px; box-sizing: content-box"></div>
-            <graph :best="false" :old="false" :obj="it" ref="altGraph" :key="render_keys[index]" slot="reference" style="cursor: pointer;"></graph>
+            <graph :best="false" :old="false" :obj="it" ref="altGraph" :key="render_keys[index]" slot="reference" style="margin-bottom: 10px; cursor: pointer;"></graph>
           </el-popover>
         </div>
       </el-scrollbar>
@@ -17,7 +17,6 @@
 
 <script>
 import Graph from './Graph.vue';
-// import xlsx from "xlsx";
 export default {
   components: { Graph },
   name: "Alternative",
@@ -40,22 +39,8 @@ export default {
   },
   methods: {
     changeBest(event, index) {
-      // console.log(`change best ${index}`);
       this.$emit('selectedImgChanged', index);
     },
-    updateRender(index) {
-      // console.log("wwwwwwwwwwwwwwwwwwwwwwwww");
-      // console.log(index);
-      this.objs = this.$store.state.img_preview;
-      const _this = this;
-      _this.$nextTick(() => {
-        // these two ways don't work
-        // _this.render_keys[index]++;
-        // console.log('yyyyyyyyyyyyyyyyy');
-        // console.log(_this.$refs);
-        _this.$refs.altGraph[index].$forceUpdate();
-      })
-    }
   }
 };
 </script>

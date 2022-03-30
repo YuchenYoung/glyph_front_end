@@ -9,16 +9,6 @@ const routes = [
     redirect: '/index'
   },
   {
-    path: '/test',
-    name: 'test',
-    component: () => import('../views/Test.vue')
-  },
-  {
-    path: '/whole',
-    name: 'whole',
-    component: () => import('../views/Whole.vue')
-  },
-  {
     path: '/index',
     name: 'index',
     component: () => import('../views/Index.vue'),
@@ -36,11 +26,6 @@ const routes = [
         path: 'preprocess',
         name: 'preprocess',
         component: () => import('../components/Preprocess.vue')
-      },
-      {
-        path: 'image',
-        name: 'image',
-        component: () => import('../components/UpImage.vue')
       },
       {
         path: 'vis',

@@ -1,15 +1,14 @@
-Item,cheese,bacon,Serving Size,Total Fat,Sugars,Vitamin A,Vitamin C ,Calcium,Iron
-Big Mac,0,0,7.4,27,9,6%,2%,25%,25%
-Quarter Pounder with Cheese,1,1,7.1,26,10,10%,2%,30%,25%
-Quarter Pounder with Bacon & Cheese,0,2,8,29,12,6%,15%,25%,30%
-Quarter Pounder with Bacon Habanero Ranch,0,2,8.3,31,10,8%,20%,25%,30%
-Quarter Pounder Deluxe,0,1,8.6,27,9,10%,8%,25%,30%
-Double Quarter Pounder with Cheese,2,1,10,43,10,10%,2%,30%,35%
-Hamburger,0,1,3.5,8,6,2%,2%,10%,15%
-Cheeseburger,1,1,4,11,7,6%,2%,20%,15%
-Double Cheeseburger,2,1,5.7,21,7,10%,2%,30%,20%
-Bacon Clubhouse Burger,0,1,9.5,40,14,8%,25%,30%,25%
-McDouble,0,1,5.2,17,7,6%,2%,20%,20%
-Bacon McDouble,0,2,5.7,22,7,6%,10%,20%,20%
-Daily Double,0,1,6.7,22,7,8%,8%,20%,20%
-McRib,0,1,7.3,26,11,2%,2%,15%,20%
+Item,Burger Lettuce,Bacon,Serving Size,Sugars,Vitamin A,Vitamin C,Calcium,Iron
+Quarter Pounder with Cheese,0,1,7.1,10,10%,2%,30%,25%
+Quarter Pounder with Bacon & Cheese,1,2,8,12,6%,15%,25%,30%
+Quarter Pounder Deluxe,2,1,8.6,9,10%,8%,25%,30%
+Double Quarter Pounder with Cheese,0,1,10,10,10%,2%,30%,35%
+Big Mac,2,0,7.4,9,6%,2%,25%,25%
+Hamburger,0,1,3.5,6,2%,2%,10%,15%
+Cheeseburger,0,1,4,7,6%,2%,20%,15%
+Double Cheeseburger,0,1,5.7,7,10%,2%,30%,20%
+Bacon Clubhouse Burger,2,1,9.5,14,8%,25%,30%,25%
+McDouble,0,1,5.2,7,6%,2%,20%,20%
+Bacon McDouble,0,2,5.7,7,6%,10%,20%,20%
+Daily Double,1,1,6.7,7,8%,8%,20%,20%
+McRib,0,1,7.3,11,2%,2%,15%,20%

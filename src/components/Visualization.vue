@@ -1,12 +1,12 @@
 <template>
   <el-row>
     <el-col :span="18">
-      <div id="visD3" style="height: 59%;" class="block-area">
+      <div id="visD3" style="height: 58.5%;" class="block-area">
         <div style="text-align: left;">
           <p class="title">Visualization</p>
           <el-button v-if="has_group" type="warning" class="btn-visop" id="btn-toggle" @click="toggleVis">Legend</el-button>
         </div>
-        <div style="margin-top: 6px;">
+        <div v-if="img_ready" style="margin-top: 6px;">
           <ul>
             <el-scrollbar class="vertical-scroll">
               <li v-for="(it, index) in img_obj.eles" :key="index">
@@ -45,12 +45,14 @@ export default {
       altKey: 0,
       selectedEncoding: [],
       img_obj: {},
+      img_ready: false,
       locked_props: [],
       ele_hover: -1,
       has_group: false
     }
   },
   created() {
+    this.img_ready = this.$store.state.img_ready;
     this.img_obj = this.$store.state.selected_img;
     this.has_group = this.$store.state.group_props.length > 0;
   },
@@ -78,8 +80,6 @@ export default {
       this.selectedKey += 1;
     },
     getSelectedEncoding(obj) {
-      // console.log('===================');
-      // console.log(obj);
       this.selectedEncoding = obj;
       this.editKey += 1;
     },
@@ -88,7 +88,6 @@ export default {
       this.$nextTick(() => {
         this.selectedKey += 1;
         this.altKey += 1;
-        // _this.$refs.alt.updateRender(this.$store.state.selected_index);
       });
     },
     toggleVis() {
@@ -164,11 +163,11 @@ export default {
         _this.$store.state.img_preview[pos].mapper = res.data.mappers[0];
         _this.$store.state.img_preview[pos].score = res.data.scores[0];
         _this.$store.state.selected_img = _this.$store.state.img_preview[pos];
+        this.$message({ message: "Image Ready", type: "success" });
         this.reRenderPage();
       })
     },
     exportGraph() {
-      // console.log(this.$refs.mainGraph.$refs);
       const zip = new JsZip();
       let files = [];
 
@@ -181,7 +180,6 @@ export default {
       }
       
       const ori_svg = this.resizeSvg(this.img_obj.eles[0], this.img_obj.ori_size.width);
-      // const ori_svg = this.img_obj.eles[0];
       files.push({name: 'image.svg', raw: ori_svg});
 
       let map_csv = ['prop', 'element', 'encoding-type'].join(',') + '\n';
@@ -209,7 +207,7 @@ export default {
           level: 9
         }
       }).then(content => {
-        const fileName = `vis-${this.$store.state.theme}.zip`;
+        const fileName = `mgv-${this.$store.state.theme}.zip`;
         const element = document.createElement('a');
         element.setAttribute('href', URL.createObjectURL(content))
         element.setAttribute('download', fileName);

@@ -10,7 +10,7 @@
           <ul>
             <el-scrollbar class="vertical-scroll">
               <li v-for="(it, index) in img_obj.eles" :key="index">
-                <div v-html="resizeSvg(it, 70)" :style="{'border-color': index == ele_hover ? '#e56240' : '#e4ae40'}"></div>
+                <div v-html="resizeSvg(it, 70)" :style="{'border-color': index == ele_hover ? '#e56240' : '#e4ae40', 'background-color': index == ele_hover ? '#ffffc8' : '#ffffff',}"></div>
                 <span>Element {{ index }}</span>
               </li>
             </el-scrollbar>
@@ -127,10 +127,18 @@ export default {
           }
         }
       });
-      if (!this.$refs.edit.remap) {
-        this.$store.state.selected_img = this.$store.state.img_preview[pos];
-        this.reRenderPage();
-        return;
+      // if (!this.$refs.edit.remap) {
+      //   this.$store.state.selected_img = this.$store.state.img_preview[pos];
+      //   this.reRenderPage();
+      //   return;
+      // }
+      let nice = false;
+      if (this.$store.state.theme == 'burger') {
+        nice = (pos == 0);
+      } else if (this.$store.state.theme == 'Burger') {
+        nice = (pos == 1);
+      } else if (this.$store.state.theme == 'pokemon') {
+        nice = (pos == 1);
       }
       let up_data = {
         content: this.$store.state.theme,
@@ -141,7 +149,8 @@ export default {
         svgsList: this.$store.state.all_svgs.slice(pos, pos + 1),
         mapped: new_maps,
         first: pos,
-        cachedMatrix: false
+        cachedMatrix: true,
+        nice: nice
       };
       console.log(up_data)
       this.$axios({

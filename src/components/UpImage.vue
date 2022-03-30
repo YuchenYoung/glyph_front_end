@@ -344,6 +344,14 @@ export default {
         // };
         return;
       }
+      let nice = false;
+      if (this.$store.state.theme == 'burger') {
+        nice = (pos == 0);
+      } else if (this.$store.state.theme == 'Burger') {
+        nice = (pos == 1);
+      } else if (this.$store.state.theme == 'pokemon') {
+        nice = (pos == 1);
+      }
       let up_data = {
         content: this.$store.state.theme,
         dataProps: this.$store.state.props,
@@ -354,6 +362,7 @@ export default {
         mapped: [],
         first: pos,
         cachedMatrix: true,
+        nice: nice
       };
       this.$axios({
         method: "post",

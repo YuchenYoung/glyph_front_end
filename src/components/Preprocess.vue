@@ -101,6 +101,11 @@ export default {
         if (it.length > 1) group_props.push(it);
       });
       this.$store.state.group_props = group_props;
+      if (group_props.length > 0) {
+        if (this.$store.state.theme == 'burger') {
+          this.$store.state.theme = 'Burger';
+        }
+      }
       this.$store.dispatch("generate", this);
     },
   },

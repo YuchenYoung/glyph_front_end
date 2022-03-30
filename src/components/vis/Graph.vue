@@ -616,7 +616,7 @@ export default {
       };
 
       const render_name = (glyph, it_name, width, height) => {
-        const font = parseInt(height / 9.5);
+        const font = parseInt(height / 8.5);
         glyph.append('text')
           .attr('text-anchor', 'middle')
           .attr('transform', `translate(${width / 2}, ${(height_scale - 0.02) * height - 1.2 * font})`)

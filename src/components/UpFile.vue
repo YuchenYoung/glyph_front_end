@@ -51,7 +51,7 @@ export default {
         }
         const props = Object.keys(tmp_data[0]);
         const names = tmp_data.map(d => d[props[0]]);
-        this.$store.state.props = props;
+        this.$store.state.props = props.slice(1);
         this.$store.state.names = names;
         this.$store.state.table_props = JSON.parse(JSON.stringify(props)); 
         this.$router.push({path: '/index/preprocess'});

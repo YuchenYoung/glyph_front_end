@@ -135,9 +135,7 @@ export default new Vuex.Store({
       const data = this.state.data;
       this.state.props.forEach((it) => {
         this.state.data_type[it] = judgeDataType(it, data.map((d) => d[it]));
-        this.state.data_range[it] = getDataRange(
-          data.map((d) => d[it])
-        );
+        this.state.data_range[it] = getDataRange(data.map((d) => d[it]));
       });
       this.state.group_props.forEach((it, index) => {
         this.state.data_type[`group${index}`] = judgeGroupType(it, this.state.data_type);
@@ -459,10 +457,23 @@ export default new Vuex.Store({
           return "rect";
         }
       };
-
-      this.state.img_preview = [];
+      const initImgs = () => {
+        this.state.all_svgs = [];
+        this.state.d_list = [];
+        this.state.paths_size = [];
+        this.state.img_type = [];
+        this.state.svg_width = 0;
+        this.state.svg_height = 0;
+        this.state.svg_list = [];
+        this.state.img_preview = [];
+        this.state.first_imgs = [];
+        this.state.img_ready = false;
+        this.state.mapper = {};
+        this.state.selected_index = 0;
+        this.state.selected_img = {};
+      }
+      initImgs();
       searchSvg();
-
     },
 
     generate(state, view) {
